@@ -100,12 +100,10 @@
     </worldbody>
 	
     <equality>
-        <!-- <weld name="packageconnect" body1="B_first" body2="package" anchor="0 0 0.1" solref="-10000 -1000"/> -->
         <weld name="quad1connect" body1="B_last" body2="quad1" anchor="0 0 -0.04" solref="-10000 -1000"/>
-        <!-- <connect name="quad1connect" body1="B_last" body2="quad1" anchor="0 0 -0.04" solref="-10000 -1000"/> -->
+        <!-- <connect name="quad1connect" active="true" body1="quad1" body2="B_last" anchor="0 0 -0.02" solref="-10000 -1000"/> -->
+        <!-- In connect anchor is respect to body1 in weld anchor is with respect to body2 -->
         
-        <!-- <weld name="left_boundary" body1="B_first" body2="package" anchor="0 0 0.5" solref="-10000 -1000" /> -->
-        <!-- <weld name="right_boundary" body1="B_last" body2="package2" anchor="1.2 0 0.2" solref="-10000 -1000" /> -->
     </equality>
 
 
