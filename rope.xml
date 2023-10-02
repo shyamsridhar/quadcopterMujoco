@@ -349,7 +349,26 @@
         <magnetometer name="mag2" site="com2" noise="1"/>
         <magnetometer name="mag3" site="com3" noise="1"/>
         <magnetometer name="mag4" site="com4" noise="1"/>
-        
+
+        <framepos name="gps1" objtype="site" objname="com"/>
+        <framepos name="gps2" objtype="site" objname="com2"/>
+        <framepos name="gps3" objtype="site" objname="com3"/>
+        <framepos name="gps4" objtype="site" objname="com4"/>
+
+        <framelinvel name="vel1" objtype="site" objname="com"/>
+        <framelinvel name="vel2" objtype="site" objname="com2"/>
+        <framelinvel name="vel3" objtype="site" objname="com3"/>
+        <framelinvel name="vel4" objtype="site" objname="com4"/>
+
+        <framequat name="quat1" objtype="site" objname="com"/>
+        <framequat name="quat2" objtype="site" objname="com2"/>
+        <framequat name="quat3" objtype="site" objname="com3"/>
+        <framequat name="quat4" objtype="site" objname="com4"/>
+
+        <frameangvel name="ang1" objtype="site" objname="com"/>
+        <frameangvel name="ang2" objtype="site" objname="com2"/>
+        <frameangvel name="ang3" objtype="site" objname="com3"/>
+        <frameangvel name="ang4" objtype="site" objname="com4"/>
 
 	</sensor>
 	
