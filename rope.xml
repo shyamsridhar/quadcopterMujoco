@@ -337,8 +337,20 @@
     <sensor>
 		<gyro name="gyroscope1" site="com" noise="1"/>
         <gyro name="gyroscope2" site="com2" noise="1"/>
-        <gyro name="gyroscope3" site="com2" noise="1"/>
-        <gyro name="gyroscope4" site="com2" noise="1"/>
+        <gyro name="gyroscope3" site="com3" noise="1"/>
+        <gyro name="gyroscope4" site="com4" noise="1"/>
+
+        <accelerometer name="accel1" site="com" noise="1"/>
+        <accelerometer name="accel2" site="com2" noise="1"/>
+        <accelerometer name="accel3" site="com3" noise="1"/>
+        <accelerometer name="accel4" site="com4" noise="1"/>
+
+        <magnetometer name="mag1" site="com" noise="1"/>
+        <magnetometer name="mag2" site="com2" noise="1"/>
+        <magnetometer name="mag3" site="com3" noise="1"/>
+        <magnetometer name="mag4" site="com4" noise="1"/>
+        
+
 	</sensor>
 	
     <actuator>
