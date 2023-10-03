@@ -222,8 +222,8 @@ glfw.set_cursor_pos_callback(window, mouse_move)
 glfw.set_mouse_button_callback(window, mouse_button)
 glfw.set_scroll_callback(window, scroll)
 
-cam.azimuth = 90 ; cam.elevation = -45 ; cam.distance =  5
-cam.lookat = np.array([ 0.0 , 0.0 , 0.0 ])
+cam.type=1; cam.trackbodyid=53
+cam.azimuth = 90 ; cam.elevation = -45 ; cam.distance =  10
 
 #initialize the controller
 init_controller(model,data)
