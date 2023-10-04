@@ -1,3 +1,13 @@
+#qpos and qvel represent the position and velocity of joints and not bodies. for a 6 dof joint qpos first 3 represent position and next 4 represent unit quaternion.
+#obtain qpos address from mjModel.jnt_qposadr. qpos contains data according to number of generalized coordinates nq. For a 6 degree of freedom joint qpos contains 7*1 data. This depends on joint type
+#for example for drone 2 we know that it is connected to world body using root2 free joint. This has jnt_qposadr 11. Therefore 14:18 gives orientation
+#qvel contains generalized velocities of joints depending on number of degrees of freedom
+#use mjData.jnt_dofadr to get the qvel position corresponding to the joint.
+#qvel data is usually 6 numbers for 6 dof joint like root. first 3 for linear velocity and next 3 for angular velocity
+
+#The orientation of a free joint (a quaternion) is also in the global frame. However, the rotational velocities of a free joint are in the local frame. --- Explained by Yuval Tassa as a response to a query
+#For rest of the joints it is always local and expressed with respect to parent.
+
 from doctest import debug
 from typing import Concatenate
 import mujoco as mj
@@ -36,31 +46,35 @@ th41, th42, th43, th44, tq41, tq42, tq43, tq44 = np.zeros((3,1)), np.zeros((3,1)
 
 
 def init_controller(model, data):
-    data.qpos[2] = 0
+    data.qpos[2] = 0; data.qpos[13] = 0; data.qpos[24] = 0; data.qpos[35] = 0
     data.qvel[:] = 0
     pass
 
 def controller(model, data):
-    res = np.zeros((9,1))
-    mj.mju_quat2Mat(res,data.qpos[3:7])
-    R = res.reshape((3,3))
-    propvel = data.qvel[6:10]
-    thrust = kthr*propvel**2
-    torque = ktrq*propvel**2
+    res = np.zeros((9,1)); res2 = np.zeros((9,1)); res3 = np.zeros((9,1)); res4 = np.zeros((9,1))
+    mj.mju_quat2Mat(res,data.qpos[3:7]); mj.mju_quat2Mat(res2,data.qpos[14:18]); mj.mju_quat2Mat(res3,data.qpos[25:29]); mj.mju_quat2Mat(res4,data.qpos[36:40])
+
+    R = res.reshape((3,3)); R2 = res2.reshape((3,3)); R3 = res3.reshape((3,3)); R4 = res4.reshape((3,3))
+
+    propvel = data.qvel[6:10]; propvel2 = data.qvel[16:20]; propvel3 = data.qvel[26:30]; propvel4 = data.qvel[36:40]
+
+    thrust = kthr*propvel**2; thrust2 = kthr*propvel2**2; thrust3 = kthr*propvel3**2; thrust4 = kthr*propvel4**2
+    torque = ktrq*propvel**2; torque2 = ktrq*propvel2**2; torque3 = ktrq*propvel3**2; torque4 = ktrq*propvel4**2
+
     global th1, th2, th3, th4, tq1, tq2, tq3, tq4, th21, th22, th23, th24, tq21, tq22, tq23, tq24, th31, th32, th33, th34, tq31, tq32, tq33, tq34, th41, th42, th43, th44, tq41, tq42, tq43, tq44
     th1, th2, th3, th4, tq1, tq2, tq3, tq4 = np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1))
     th21, th22, th23, th24, tq21, tq22, tq23, tq24 = np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1))
     th31, th32, th33, th34, tq31, tq32, tq33, tq34 = np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1))
     th41, th42, th43, th44, tq41, tq42, tq43, tq44 = np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1))
-    
+
     th1[2], th2[2], th3[2], th4[2] = thrust
-    th21[2], th22[2], th23[2], th24[2] = thrust
-    th31[2], th32[2], th33[2], th34[2] = thrust
-    th41[2], th42[2], th43[2], th44[2] = thrust
+    th21[2], th22[2], th23[2], th24[2] = thrust2
+    th31[2], th32[2], th33[2], th34[2] = thrust3
+    th41[2], th42[2], th43[2], th44[2] = thrust4
     tq1[2], tq2[2], tq3[2], tq4[2] = torque
-    tq21[2], tq22[2], tq23[2], tq24[2] = torque
-    tq31[2], tq32[2], tq33[2], tq34[2] = torque
-    tq41[2], tq42[2], tq43[2], tq44[2] = torque
+    tq21[2], tq22[2], tq23[2], tq24[2] = torque2
+    tq31[2], tq32[2], tq33[2], tq34[2] = torque3
+    tq41[2], tq42[2], tq43[2], tq44[2] = torque4
 
     th1a = np.matmul(R,th1)
     th2a = np.matmul(R,th2)
@@ -71,35 +85,35 @@ def controller(model, data):
     tq3a = np.matmul(R,tq3)
     tq4a = np.matmul(R,tq4)
 
-    th21a = np.matmul(R,th21)
-    th22a = np.matmul(R,th22)
-    th23a = np.matmul(R,th23)
-    th24a = np.matmul(R,th24)
-    tq21a = np.matmul(R,tq21)
-    tq22a = np.matmul(R,tq22)
-    tq23a = np.matmul(R,tq23)
-    tq24a = np.matmul(R,tq24)
+    th21a = np.matmul(R2,th21)
+    th22a = np.matmul(R2,th22)
+    th23a = np.matmul(R2,th23)
+    th24a = np.matmul(R2,th24)
+    tq21a = np.matmul(R2,tq21)
+    tq22a = np.matmul(R2,tq22)
+    tq23a = np.matmul(R2,tq23)
+    tq24a = np.matmul(R2,tq24)
 
-    th31a = np.matmul(R,th31)
-    th32a = np.matmul(R,th32)
-    th33a = np.matmul(R,th33)
-    th34a = np.matmul(R,th34)
-    tq31a = np.matmul(R,tq31)
-    tq32a = np.matmul(R,tq32)
-    tq33a = np.matmul(R,tq33)
-    tq34a = np.matmul(R,tq34)
+    th31a = np.matmul(R3,th31)
+    th32a = np.matmul(R3,th32)
+    th33a = np.matmul(R3,th33)
+    th34a = np.matmul(R3,th34)
+    tq31a = np.matmul(R3,tq31)
+    tq32a = np.matmul(R3,tq32)
+    tq33a = np.matmul(R3,tq33)
+    tq34a = np.matmul(R3,tq34)
 
-    th41a = np.matmul(R,th41)
-    th42a = np.matmul(R,th42)
-    th43a = np.matmul(R,th43)
-    th44a = np.matmul(R,th44)
-    tq41a = np.matmul(R,tq41)
-    tq42a = np.matmul(R,tq42)
-    tq43a = np.matmul(R,tq43)
-    tq44a = np.matmul(R,tq44)
-    
+    th41a = np.matmul(R4,th41)
+    th42a = np.matmul(R4,th42)
+    th43a = np.matmul(R4,th43)
+    th44a = np.matmul(R4,th44)
+    tq41a = np.matmul(R4,tq41)
+    tq42a = np.matmul(R4,tq42)
+    tq43a = np.matmul(R4,tq43)
+    tq44a = np.matmul(R4,tq44)
 
-    #xfrc 
+
+    #xfrc. Find XFRC position based on body id
     data.xfrc_applied[7][:] = np.concatenate((th1a,-tq1a),axis=0).flatten()
     data.xfrc_applied[9][:] = np.concatenate((th2a,-tq2a),axis=0).flatten()
     data.xfrc_applied[11][:] = np.concatenate((th3a,tq3a),axis=0).flatten()
@@ -232,26 +246,39 @@ init_controller(model,data)
 mj.set_mjcb_control(controller)
 
 while not glfw.window_should_close(window):
-    res = np.zeros((9,1))
-    mj.mju_quat2Mat(res,data.qpos[3:7])
-    R = res.reshape((3,3))
-    roll = np.arctan2(R[2][1],R[2][2])
-    pitch = np.arcsin(-R[2][0])
-    yaw = np.arctan2(R[1][0],R[0][0])
-    absangvel = data.qvel[3:6].reshape((3,1))
-    bdyangvel = np.matmul(R.T,absangvel)
+    res = np.zeros((9,1)); res2 = np.zeros((9,1)); res3 = np.zeros((9,1)); res4 = np.zeros((9,1))
+
+    mj.mju_quat2Mat(res,data.qpos[3:7]); mj.mju_quat2Mat(res2,data.qpos[14:18]); mj.mju_quat2Mat(res3,data.qpos[25:29]); mj.mju_quat2Mat(res4,data.qpos[36:40])
+    R = res.reshape((3,3)); R2 = res2.reshape((3,3)); R3 = res3.reshape((3,3)); R4 = res4.reshape((3,3))
+
+    roll = np.arctan2(R[2][1],R[2][2]); roll2 = np.arctan2(R2[2][1],R2[2][2]); roll3 = np.arctan2(R3[2][1],R3[2][2]); roll4 = np.arctan2(R4[2][1],R4[2][2])
+    pitch = np.arcsin(-R[2][0]); pitch2 = np.arcsin(-R2[2][0]); pitch3 = np.arcsin(-R3[2][0]); pitch4 = np.arcsin(-R4[2][0])
+    yaw = np.arctan2(R[1][0],R[0][0]); yaw2 = np.arctan2(R2[1][0],R2[0][0]); yaw3 = np.arctan2(R3[1][0],R3[0][0]); yaw4 = np.arctan2(R4[1][0],R4[0][0])
+
+    absangvel = data.qvel[3:6].reshape((3,1)); absangvel2 = data.qvel[13:16].reshape((3,1)); absangvel3 = data.qvel[23:26].reshape((3,1)); absangvel4 = data.qvel[33:36].reshape((3,1))
+    bdyangvel = np.matmul(R.T,absangvel); bdyangvel2 = np.matmul(R2.T,absangvel2); bdyangvel3 = np.matmul(R3.T,absangvel3); bdyangvel4 = np.matmul(R4.T,absangvel4)
+
     Tmatinv = np.array([[1,np.sin(roll)*np.tan(pitch),np.cos(roll)*np.tan(pitch)],[0,np.cos(roll),-np.sin(roll)],[0,np.sin(roll)/np.cos(pitch),np.cos(roll)/np.cos(pitch)]])
-    rpyrates = np.matmul(Tmatinv,bdyangvel)
+    Tmatinv2 = np.array([[1,np.sin(roll2)*np.tan(pitch2),np.cos(roll2)*np.tan(pitch2)],[0,np.cos(roll2),-np.sin(roll2)],[0,np.sin(roll2)/np.cos(pitch2),np.cos(roll2)/np.cos(pitch2)]])
+    Tmatinv3 = np.array([[1,np.sin(roll3)*np.tan(pitch3),np.cos(roll3)*np.tan(pitch3)],[0,np.cos(roll3),-np.sin(roll3)],[0,np.sin(roll3)/np.cos(pitch3),np.cos(roll3)/np.cos(pitch3)]])
+    Tmatinv4 = np.array([[1,np.sin(roll4)*np.tan(pitch4),np.cos(roll4)*np.tan(pitch4)],[0,np.cos(roll4),-np.sin(roll4)],[0,np.sin(roll4)/np.cos(pitch4),np.cos(roll4)/np.cos(pitch4)]])
+
+    rpyrates = np.matmul(Tmatinv,bdyangvel); rpyrates2 = np.matmul(Tmatinv2,bdyangvel2); rpyrates3 = np.matmul(Tmatinv3,bdyangvel3); rpyrates4 = np.matmul(Tmatinv4,bdyangvel4)
     rollrate, pitchrate, yawrate = rpyrates.flatten()
+    rollrate2, pitchrate2, yawrate2 = rpyrates2.flatten()
+    rollrate3, pitchrate3, yawrate3 = rpyrates3.flatten()
+    rollrate4, pitchrate4, yawrate4 = rpyrates4.flatten()
+
     t = data.time
     # dr, dp, dy = 20.0*np.pi/180*np.sin(10*t), 20.0*np.pi/180*np.sin(2*t), 20.0*np.pi/180*np.sin(2*t)
     # dr, dp, dy = 20.0*np.pi/180*np.sin(10*t), 20.0*np.pi/180*np.sin(2*t), 20.0*np.pi/180*np.sin(2*t)
-    dr, dp, dy = 0, 0, 0 
-    zf = 70 + 10*(2-data.qpos[2])+6*(0-data.qvel[2])
-    rf = 10*(dr-roll)+5*(0-rollrate)
-    pf = 10*(dp-pitch)+5*(0-pitchrate)
-    yf = 10*(dy-yaw)+5*(0-yawrate)
+    dr, dp, dy = 0, 0, 0
+    zf = 70 + 10*(2-data.qpos[2])+6*(0-data.qvel[2]); zf2 = 70 + 10*(2-data.qpos[13])+6*(0-data.qvel[12]); zf3 = 70 + 10*(2-data.qpos[24])+6*(0-data.qvel[22]); zf4 = 70 + 10*(2-data.qpos[35])+6*(0-data.qvel[32])
+    rf = 10*(dr-roll)+5*(0-rollrate); rf2 = 10*(dr-roll2)+5*(0-rollrate2); rf3 = 10*(dr-roll3)+5*(0-rollrate3); rf4 = 10*(dr-roll4)+5*(0-rollrate4)
+    pf = 10*(dp-pitch)+5*(0-pitchrate); pf2 = 10*(dp-pitch2)+5*(0-pitchrate2); pf3 = 10*(dp-pitch3)+5*(0-pitchrate3); pf4 = 10*(dp-pitch4)+5*(0-pitchrate4)
+    yf = 10*(dy-yaw)+5*(0-yawrate); yf2 = 10*(dy-yaw2)+5*(0-yawrate2); yf3 = 10*(dy-yaw3)+5*(0-yawrate3); yf4 = 10*(dy-yaw4)+5*(0-yawrate4)
 
+    # rf = 0, rf2 = 0, rf3 = 0, rf4=0, pf=0, pf2=0, pf3=0, pf4=0, yf=0, yf2=0, yf3=0, yf4 = 0
     #quad1
     data.ctrl[0] = zf-rf-pf-yf
     data.ctrl[1] = zf+rf+pf-yf
@@ -259,40 +286,40 @@ while not glfw.window_should_close(window):
     data.ctrl[3] = zf-rf+pf+yf
 
     #quad2
-    data.ctrl[4] = zf-rf-pf-yf
-    data.ctrl[5] = zf+rf+pf-yf
-    data.ctrl[6] = zf+rf-pf+yf
-    data.ctrl[7] = zf-rf+pf+yf
+    data.ctrl[4] = zf2-rf2-pf2-yf2
+    data.ctrl[5] = zf2+rf2+pf2-yf2
+    data.ctrl[6] = zf2+rf2-pf2+yf2
+    data.ctrl[7] = zf2-rf2+pf2+yf2
 
     #quad3
-    data.ctrl[8] = zf-rf-pf-yf
-    data.ctrl[9] = zf+rf+pf-yf
-    data.ctrl[10] = zf+rf-pf+yf
-    data.ctrl[11] = zf-rf+pf+yf
+    data.ctrl[8] = zf3-rf3-pf3-yf3
+    data.ctrl[9] = zf3+rf3+pf3-yf3
+    data.ctrl[10] = zf3+rf3-pf3+yf3
+    data.ctrl[11] = zf3-rf3+pf3+yf3
 
     #quad4
-    data.ctrl[12] = zf-rf-pf-yf
-    data.ctrl[13] = zf+rf+pf-yf
-    data.ctrl[14] = zf+rf-pf+yf
-    data.ctrl[15] = zf-rf+pf+yf
+    data.ctrl[12] = zf4-rf4-pf4-yf4
+    data.ctrl[13] = zf4+rf4+pf4-yf4
+    data.ctrl[14] = zf4+rf4-pf4+yf4
+    data.ctrl[15] = zf4-rf4+pf4+yf4
 
     for _ in range(5):
       mj.mj_step(model, data)
-    
+
     #print("Time: {0:5.2f}, Zpos: {1:5.3f}, Roll: {2:5.2f}, Pitch: {3:5.2f}, Yaw: {4:5.2f}".format(t,data.qpos[2],roll*180/np.pi,pitch*180/np.pi,yaw*180/np.pi))
     print(data.sensordata[6],data.sensordata[7],data.sensordata[8])
     #print("Time: {0:5.2f}, Zpos: {1:5.3f}, Roll: {2:5.2f}, Rollrate: {3:5.2f}".format(t,data.qpos[2],roll*180/np.pi,data.sensordata[0]*180/np.pi))
-    # torques due to thrust forces 
+    # torques due to thrust forces
     t1 = np.cross(r1,th1,axis=0)
     t2 = np.cross(r2,th2,axis=0)
     t3 = np.cross(r3,th3,axis=0)
     t4 = np.cross(r4,th4,axis=0)
-    
+
     netTorque = (t1+t2+t3+t4-tq1-tq2+tq3+tq4).reshape(3)
-    
+
     if (data.time>=simend):
         break
-    
+
     # get framebuffer viewport
     viewport_width, viewport_height = glfw.get_framebuffer_size(
         window)
@@ -309,6 +336,6 @@ while not glfw.window_should_close(window):
 
     # process pending GUI events, call GLFW callbacks
     glfw.poll_events()
-    
-   
+
+
 glfw.terminate()
