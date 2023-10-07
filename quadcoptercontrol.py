@@ -14,6 +14,7 @@
 
 #roll and pitch behave separately for position error. When poserror is positive current roll is also positive while poserror is positive for pitch current pich is negative. Therefore we multiply -1 for roll
 
+#calculate desired rp angles in world frame based on PD control. Target is fixed i.e. does not change with time. Derivative kick is avoided. 
 from doctest import debug
 from typing import Concatenate
 import mujoco as mj
@@ -50,7 +51,7 @@ kthr = 1.08E-05
 ktrq = 1.62E-07
 
 kp=1
-kd=0
+kd=0.1
 kpr=20
 kdr=20
 
@@ -279,7 +280,7 @@ while not glfw.window_should_close(window):
     pitch = np.arcsin(-R[2][0]); pitch2 = np.arcsin(-R2[2][0]); pitch3 = np.arcsin(-R3[2][0]); pitch4 = np.arcsin(-R4[2][0])
     yaw = np.arctan2(R[1][0],R[0][0]); yaw2 = np.arctan2(R2[1][0],R2[0][0]); yaw3 = np.arctan2(R3[1][0],R3[0][0]); yaw4 = np.arctan2(R4[1][0],R4[0][0])
 
-    bodyangvel1 = np.array([data.qvel[4], data.qvel[3], data.qvel[5]], ndmin=2).T; bodyangvel2 = np.array([data.qvel[14], data.qvel[13], data.qvel[15]], ndmin=2).T; bodyangvel3 = np.array([data.qvel[24], data.qvel[23], data.qvel[25]], ndmin=2).T; bodyangvel4 = np.array([data.qvel[34], data.qvel[33], data.qvel[36]], ndmin=2).T
+    bodyangvel1 = np.array([data.qvel[4], data.qvel[3], data.qvel[5]], ndmin=2).T; bodyangvel2 = np.array([data.qvel[14], data.qvel[13], data.qvel[15]], ndmin=2).T; bodyangvel3 = np.array([data.qvel[24], data.qvel[23], data.qvel[25]], ndmin=2).T; bodyangvel4 = np.array([data.qvel[34], data.qvel[33], data.qvel[35]], ndmin=2).T
     
     t = data.time
 
@@ -290,17 +291,15 @@ while not glfw.window_should_close(window):
     currentpr1 = np.array([pitch, roll, yaw], ndmin=2).T; currentpr2 = np.array([pitch2, roll2, yaw2], ndmin=2).T; currentpr3 = np.array([pitch3, roll3, yaw3], ndmin=2).T; currentpr4 = np.array([pitch4, roll4, yaw4], ndmin=2).T
     # currentrp1vel = np.array(data.sensordata[0:3], ndmin=2); currentrp2vel = np.array(data.sensordata[3:6], ndmin=2); currentrp3vel = np.array(data.sensordata[6:9], ndmin=2); currentrp4vel = np.array(data.sensordata[9:12], ndmin=2)
     poserror1 = target1-currentpos1; poserror2 = target2-currentpos2; poserror3 = target3-currentpos3; poserror4 = target4-currentpos4
-    #calculate desired rp angles in world frame based on PD control. Target is fixed i.e. does not change with time. Derivative kick is avoided. 
     dpr1 = kp*poserror1 + kd*(0-currentvel1); dpr2 = kp*poserror2 + kd*(0-currentvel2); dpr3 = kp*poserror3 + kd*(0-currentvel3); dpr4 = kp*poserror4 + kd*(0-currentvel4)
+    
     #calculate desired rp angles in body frame
     dpr1body = np.matmul(R.T, dpr1);  dpr2body = np.matmul(R2.T, dpr2); dpr3body = np.matmul(R3.T, dpr3); dpr4body = np.matmul(R4.T, dpr4)
 
-    #multiplying with negative for roll.
     dpr1body[1] = dpr1body[1]*(-1); dpr2body[1] = dpr2body[1]*(-1); dpr3body[1] = dpr3body[1]*(-1); dpr4body[1] = dpr4body[1]*(-1)
     
-    #saturation limit to 60 degrees
-    print(currentpos1)
 
+    #saturation limit to 60 degrees
     dpr1body[0] = max(min(np.pi/3, dpr1body[0]), -np.pi/3); dpr1body[1] = max(min(np.pi/3, dpr1body[1]), -np.pi/3)
     dpr2body[0] = max(min(np.pi/3, dpr2body[0]), -np.pi/3); dpr2body[1] = max(min(np.pi/3, dpr2body[1]), -np.pi/3)
     dpr3body[0] = max(min(np.pi/3, dpr3body[0]), -np.pi/3); dpr3body[1] = max(min(np.pi/3, dpr3body[1]), -np.pi/3)
@@ -312,9 +311,10 @@ while not glfw.window_should_close(window):
     zf = 10*dpr1[2]; zf2 = 10*dpr2[2]; zf3 = 10*dpr3[2]; zf4 = 10*dpr4[2]
     rf = prf1[1]; rf2 = prf2[1]; rf3 = prf3[1]; rf4 = prf4[1]
     pf = prf1[0]; pf2 = prf2[0]; pf3 = prf3[0]; pf4 = prf4[0]
-    yf = 0; yf2 = 0; yf3 = 0; yf4 = 0
+    # yf = 0; yf2 = 0; yf3 = 0; yf4 = 0
+    yf = kpr*(0 - yaw) - kdr*(bodyangvel1[2]); yf2 = kpr*(0 - yaw2) - kdr*(bodyangvel2[2]); yf3 = kpr*(0 - yaw3) - kdr*(bodyangvel3[2]); yf4 = kpr*(0 - yaw4) - kdr*(bodyangvel4[2])
 
-
+    # print(yf, yf2, yf3, yf4)
     #quad1
     data.ctrl[0] = zf-rf-pf-yf
     data.ctrl[1] = zf+rf+pf-yf
@@ -342,9 +342,6 @@ while not glfw.window_should_close(window):
     for _ in range(5):
       mj.mj_step(model, data)
 
-    #print("Time: {0:5.2f}, Zpos: {1:5.3f}, Roll: {2:5.2f}, Pitch: {3:5.2f}, Yaw: {4:5.2f}".format(t,data.qpos[2],roll*180/np.pi,pitch*180/np.pi,yaw*180/np.pi))
-    # print(data.qpos[0:3])
-    #print("Time: {0:5.2f}, Zpos: {1:5.3f}, Roll: {2:5.2f}, Rollrate: {3:5.2f}".format(t,data.qpos[2],roll*180/np.pi,data.sensordata[0]*180/np.pi))
     # torques due to thrust forces
     t1 = np.cross(r1,th1,axis=0)
     t2 = np.cross(r2,th2,axis=0)
