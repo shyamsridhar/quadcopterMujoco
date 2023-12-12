@@ -83,7 +83,6 @@
                 <inertial pos="0 0 0" mass="0" diaginertia="0 0 0" /> 
             </body>
             <inertial pos="0 0 0" mass="1.5" fullinertia="0.00011 0.00011 0.00002 0.000000011 0.00000002 0.000000011" /> 
-            <!-- <inertial pos="0 0 0" mass="1.5" diaginertia="0.0011 0.0011 0.002"/>  -->
         </body>
 
         <!-- <body name="quad2" pos="-1.4 0 0.14825" euler='0 0 0'>

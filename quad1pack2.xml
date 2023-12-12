@@ -1,0 +1,142 @@
+<mujoco>
+    <option timestep="0.001" gravity="0 0 -9.81" />
+    <!-- <option -->
+    <!-- <compiler balanceinertia="true" /> -->
+    <visual>
+      <rgba haze="0.15 0.25 0.35 1"/>
+      <global elevation="-10" azimuth="0"/>
+    </visual>
+    <asset>
+        <texture type="skybox" builtin="gradient" rgb1=".3 .5 .7" rgb2="0 0 0" width="32" height="512"/>
+        <texture name="grid" type="2d" builtin="checker" width="1024" height="1024" rgb1=".1 .2 .3" rgb2=".2 .3 .4"/>
+        <material name="grid" texture="grid" texrepeat="1 1" texuniform="true" reflectance=".2"/>
+        <mesh name="propeller_cw" file="17.Propeller.stl" />
+        <mesh name="propeller_ccw" file="17.Propeller_ccw.stl" />
+    </asset>
+  
+    <worldbody>
+        <light name="fixedlight" mode="fixed" directional="true"/>
+        <geom name="floor" size="0 0 0.1" type="plane" material="grid" condim="3" friction="1 0 0"/>
+
+        <body name="quad1" pos="1.4 0 0.14825" euler='0 0 0'>
+            <freejoint name="root1"/>
+            <geom  type="box" group="0"  size="0.05513 0.05513 0.0185" rgba="0.23 0.23 0.23 1"/>
+            <site name="com" group="0" pos="0 0 0"/>
+            <body name="leg1" pos="0.0944 -0.0944 -0.085375" zaxis="-1 1 4">
+                <geom type="capsule" group="0" size="0.004 0.066875" />
+                <inertial pos="0 0 0" mass="0" diaginertia="0 0 0" /> 
+            </body>
+            <body name="leg2" pos="-0.0944 0.0944 -0.085375" zaxis="1 -1 4">
+                <geom type="capsule" group="0" size="0.004 0.066875" />
+                <inertial pos="0 0 0" mass="0" diaginertia="0 0 0" /> 
+            </body>
+            <body name="leg3" pos="0.0944 0.0944 -0.085375" zaxis="-1 -1 4">
+                <geom type="capsule" group="0" size="0.004 0.066875" /> 
+                <inertial pos="0 0 0" mass="0" diaginertia="0 0 0" /> 
+            </body>
+            <body name="leg4" pos="-0.0944 -0.0944 -0.085375" zaxis="1 1 4">
+                <geom type="capsule" group="0" size="0.004 0.066875" />
+                <inertial pos="0 0 0" mass="0" diaginertia="0 0 0" /> 
+            </body>
+            <body name="arm1" pos="0.0944 -0.0944 0" euler="0 0 315">
+                <geom type="box" group="0" size="0.0725 0.015865 0.0185" rgba="0.7 0 0 1"/>
+                <geom type="cylinder" group="0" pos="0.0915 0 0" euler="0 0 0" size="0.019 0.0185" rgba="0.7 0 0 1"/>
+                <geom type="cylinder" group="0" pos="0.0915 0 0.037" euler="0 0 0" size="0.002 0.0185"/>
+                <body name="propeller_ccw_1" pos="0.0915 0 0.037" euler='0 0 0'>
+                    <joint armature="0" axis="0 0 1" limited="false" frictionloss="0" name="motor1" pos="0 0 0" type="hinge"/>
+                    <geom  type="mesh" group="0"  mesh="propeller_ccw" />
+                    <inertial pos="0 0 0" mass="0.002" diaginertia="0.0000011 0.0000011 0.0000009" />
+                </body>
+                <inertial pos="0 0 0" mass="0" diaginertia="0 0 0" /> 
+            </body>
+            <body name="arm2" pos="-0.0944 0.0944 0" euler="0 0 135">
+                <geom type="box" group="0" size="0.0725 0.015865 0.0185" rgba="0.9 0.9 0.9 1"/>
+                <geom type="cylinder" group="0" pos="0.0915 0 0" euler="0 0 0" size="0.019 0.0185" rgba="0.9 0.9 0.9 1"/>
+                <geom type="cylinder" group="0" pos="0.0915 0 0.037" euler="0 0 0" size="0.002 0.0185"/>
+                <body name="propeller_ccw_2" pos="0.0915 0 0.037" euler='0 0 0'>
+                    <joint armature="0" axis="0 0 1" limited="false" frictionloss="0" name="motor2" pos="0 0 0" type="hinge"/>
+                    <geom  type="mesh" group="0"  mesh="propeller_ccw" />
+                    <inertial pos="0 0 0" mass="0.002" diaginertia="0.0000011 0.0000011 0.0000009" />
+                </body>
+                <inertial pos="0 0 0" mass="0" diaginertia="0 0 0" /> 
+            </body>
+            <body name="arm3" pos="0.0944 0.0944 0" euler="0 0 45">
+                <geom type="box" group="0" size="0.0725 0.015865 0.0185" rgba="0.7 0 0 1"/>
+                <geom type="cylinder" group="0" pos="0.0915 0 0" euler="0 0 0" size="0.019 0.0185" rgba="0.7 0 0 1"/>
+                <geom type="cylinder" group="0" pos="0.0915 0 0.037" euler="0 0 0" size="0.002 0.0185"/>
+                <body name="propeller_cw_3" pos="0.0915 0 0.037" euler='0 0 0'>
+                    <joint armature="0" axis="0 0 1" limited="false" frictionloss="0" name="motor3" pos="0 0 0" type="hinge"/>
+                    <geom  type="mesh" group="0"  mesh="propeller_cw" />
+                    <inertial pos="0 0 0" mass="0.002" diaginertia="0.0000011 0.0000011 0.0000009" />
+                </body>
+                <inertial pos="0 0 0" mass="0" diaginertia="0 0 0" /> 
+            </body>
+            <body name="arm4" pos="-0.0944 -0.0944 0" euler="0 0 225">
+                <geom type="box" group="0" size="0.0725 0.015865 0.0185" rgba="0.9 0.9 0.9 1"/>
+                <geom type="cylinder" group="0" pos="0.0915 0 0" euler="0 0 0" size="0.019 0.0185" rgba="0.9 0.9 0.9 1"/>
+                <geom type="cylinder" group="0" pos="0.0915 0 0.037" euler="0 0 0" size="0.002 0.0185"/>
+                <body name="propeller_cw_4" pos="0.0915 0 0.037" euler='0 0 0'>
+                    <joint armature="0" axis="0 0 1" limited="false" frictionloss="0" name="motor4" pos="0 0 0" type="hinge"/>
+                    <geom  type="mesh" group="0"  mesh="propeller_cw" />
+                    <inertial pos="0 0 0" mass="0.002" diaginertia="0.0000011 0.0000011 0.0000009" />
+                </body>
+                <inertial pos="0 0 0" mass="0" diaginertia="0 0 0" /> 
+            </body>
+            <inertial pos="0 0 0" mass="1.5" fullinertia="0.011 0.011 0.02 0.0011 0.002 0.0011" /> 
+        </body>
+
+        <body name="package" pos = "0 0 0.05" euler="0 0 0">
+            <freejoint name="root"/>
+            <geom type="box" group="0" size="0.05 0.05 0.05" rgba="0.8 0.5 0.23 1" />
+            <inertial pos="0 0 0" mass="0.1" diaginertia="0.0000001 0.0000001 0.0000001"/>
+
+
+            <body name="cable1" pos="0 0 0" euler="0 0 0"> 
+                <composite type="cable" curve="s" count="41 1 1" offset= "0 0 0.08" size="1.4" initial="none">
+                    <joint kind="main" damping=".015"/>
+                    <geom type="capsule" size=".005" rgba=".8 .2 .1 1" condim="1"/>
+                </composite>
+            </body>
+        </body>
+
+    </worldbody>
+	
+    <equality>
+        <!-- <weld name="quad1connect" body1="B_last" body2="quad1" anchor="0 0 -0.04" solref="-10000 -1000"/> -->
+
+        <!-- <connect name="quad1connect" active="true" body1="quad1" body2="B_last" anchor="0 0 -0.02" solref="-10000 -1000"/> -->
+        <!-- In connect anchor is respect to body1 in weld anchor is with respect to body2 -->
+        
+    </equality>
+
+
+    <sensor>
+		<gyro name="gyroscope1" site="com" noise="1"/>
+
+        <accelerometer name="accel1" site="com" noise="1"/>
+
+
+        <magnetometer name="mag1" site="com" noise="1"/>
+
+
+        <framepos name="gps1" objtype="site" objname="com"/>
+
+
+        <framelinvel name="vel1" objtype="site" objname="com"/>
+
+
+        <framequat name="quat1" objtype="site" objname="com"/>
+
+
+        <frameangvel name="ang1" objtype="site" objname="com"/>
+
+
+	</sensor>
+	
+    <actuator>
+		<motor name="m1" ctrllimited="true" ctrlrange="0 100" gear="0.0011" joint="motor1"/>
+		<motor name="m2" ctrllimited="true" ctrlrange="0 100" gear="0.0011" joint="motor2"/>
+		<motor name="m3" ctrllimited="true" ctrlrange="0 100" gear="-0.0011" joint="motor3"/>
+		<motor name="m4" ctrllimited="true" ctrlrange="0 100" gear="-0.0011" joint="motor4"/>
+    </actuator>
+</mujoco>

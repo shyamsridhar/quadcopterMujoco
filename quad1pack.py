@@ -39,15 +39,15 @@ lastx = 0
 lasty = 0
 
 #target for quad1
-target1 = np.array([0.5, 0, 10], ndmin=2).T
+target1 = np.array([1, 0, 7], ndmin=2).T
 
 # kthr = 0.00005
 # ktrq = kthr/5
 kthr = 1.08E-05
 ktrq = 1.62E-07
 
-kp=0.02
-kd=0
+kp=0.2*50
+kd=6
 kpr=20
 kdr=20
 
@@ -74,10 +74,10 @@ def controller(model, data):
 
     propvel = data.qvel[6:10]
 
-    propvel[0] = max(min(2000, propvel[0]), 300)
-    propvel[1] = max(min(2000, propvel[1]), 300)
-    propvel[2] = max(min(300, propvel[2]), -2000)
-    propvel[3] = max(min(300, propvel[3]), -2000)
+    propvel[0] = max(min(2000, propvel[0]), 0)
+    propvel[1] = max(min(2000, propvel[1]), 0)
+    propvel[2] = max(min(0, propvel[2]), -2000)
+    propvel[3] = max(min(0, propvel[3]), -2000)
 
     thrust = kthr*propvel**2
     torque = ktrq*propvel**2
