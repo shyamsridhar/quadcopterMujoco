@@ -39,7 +39,7 @@ lastx = 0
 lasty = 0
 
 #target for quad1
-target1 = np.array([5, 0, 7], ndmin=2).T
+target1 = np.array([10, 5, 7], ndmin=2).T
 
 # kthr = 0.00005
 # ktrq = kthr/5
