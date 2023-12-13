@@ -250,7 +250,7 @@ while not glfw.window_should_close(window):
     
     #calculate desired rp angles in body frame
     # dpr1body = np.matmul(R.T, target1-currentpos1)
-    dpr1body = (target1-currentpos1)*0.5
+    dpr1body = (target1-currentpos1)*0.1
 
     dpr1body[1] = dpr1body[1]*(-1)
     
@@ -259,12 +259,12 @@ while not glfw.window_should_close(window):
     dpr1body[0] = max(min(np.pi/3, dpr1body[0]), -np.pi/3); dpr1body[1] = max(min(np.pi/3, dpr1body[1]), -np.pi/3)
 
     dpr1error = dpr1body-currentpr1
-    prf1 = 5*dpr1error - 0*(bodyangvel1)
+    prf1 = 10*dpr1error - 0.5*(bodyangvel1)
 
     zf = 50 + dpr1[2] #+ prf1[1] + prf1[0]
     rf = prf1[1]
     pf = prf1[0]
-    yf = 0
+    yf = 5*(0-yaw) + 1*(0-yawrate)
     # yf = kpr*(0 - yaw) - kdr*(bodyangvel1[2])
 
     print(currentpos1)
