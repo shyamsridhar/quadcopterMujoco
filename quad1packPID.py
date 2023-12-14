@@ -39,7 +39,7 @@ lastx = 0
 lasty = 0
 
 #target for quad1
-target1 = np.array([3, 3, 3], ndmin=2).T
+target1 = np.array([10, 0, 10], ndmin=2).T
 
 # kthr = 0.00005
 # ktrq = kthr/5
@@ -287,7 +287,7 @@ while not glfw.window_should_close(window):
 
 
 
-    prf1 = 10*dpr1error + 2*(0-bodyangvel1) + 1*dpr1error1
+    prf1 = 12*dpr1error + 2*(0-bodyangvel1) + 1*dpr1error1
 
     zf = 50 + dpr1[2] #+ prf1[1] + prf1[0]
     rf = prf1[1]
