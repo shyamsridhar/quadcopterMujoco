@@ -417,7 +417,7 @@ while not glfw.window_should_close(window):
     pf4 = prf4[0]
     yf4 = 5*(0-yaw4) + 3*(0-yawrate4)
 
-    print(currentpos1[0], currentpos2[0], currentpos3[0], currentpos4[0])
+    print(currentpos1[0], currentpos2[0], currentpos3[1], currentpos4[1], currentpos1[2])
     #quad1
     data.ctrl[0] = zf[0]-rf[0]-pf[0]-yf
     data.ctrl[1] = zf[0]+rf[0]+pf[0]-yf
@@ -452,7 +452,13 @@ while not glfw.window_should_close(window):
 
     if (data.time>=simend):
         break
-
+      
+    if data.time>=2:
+        target1 = target1 + np.array([0.01,0,0], ndmin=2).T
+        target2 = target2 + np.array([0.01,0,0], ndmin=2).T
+        target3 = target3 + np.array([0.01,0,0], ndmin=2).T
+        target4 = target4 + np.array([0.01,0,0], ndmin=2).T
+    
     # get framebuffer viewport
     viewport_width, viewport_height = glfw.get_framebuffer_size(
         window)
