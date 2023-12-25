@@ -54,6 +54,7 @@ kd=6
 ki = 5
 kpr=20
 kdr=20
+movement = 0
 
 
 
@@ -327,7 +328,7 @@ while not glfw.window_should_close(window):
     ##based on quadcopter matlab
     # currentpos1 = np.array(data.sensordata[24:27], ndmin=2).T; currentpos2 = np.array(data.sensordata[27:30], ndmin=2).T; currentpos3 = np.array(data.sensordata[30:33], ndmin=2).T; currentpos4 = np.array(data.sensordata[33:36], ndmin=2).T
     currentpos1 = np.array(data.qpos[0:3], ndmin=2).T; currentpos2 = np.array(data.qpos[11:14], ndmin=2).T; currentpos3 = np.array(data.qpos[22:25], ndmin=2).T; currentpos4 = np.array(data.qpos[33:36], ndmin=2).T
-    currentvel1 = np.array(data.sensordata[0:3], ndmin=2).T; currentvel2 = np.array(data.sensordata[3:6], ndmin=2).T; currentvel3 = np.array(data.sensordata[6:9], ndmin=2).T; currentvel4 = np.array(data.sensordata[9:12], ndmin=2).T
+    currentvel1 = np.array(data.sensordata[0:3], ndmin=2).T; currentvel2 = np.array(data.sensordata[3:6], ndmin=2).T; currentvel3 = np.array(data.sensordata[6:9], ndmin=2).T; currentvel4 = np.array(data.sensordata[9:12], ndmin=2).T; currentppos = np.array(data.sensordata[12:15], ndmin=2).T
     currentpr1 = np.array([pitch, roll, yaw], ndmin=2).T; currentpr2 = np.array([pitch2, roll2, yaw2], ndmin=2).T; currentpr3 = np.array([pitch3, roll3, yaw3], ndmin=2).T; currentpr4 = np.array([pitch4, roll4, yaw4], ndmin=2).T
     # currentrp1vel = np.array(data.sensordata[0:3], ndmin=2); currentrp2vel = np.array(data.sensordata[3:6], ndmin=2); currentrp3vel = np.array(data.sensordata[6:9], ndmin=2); currentrp4vel = np.array(data.sensordata[9:12], ndmin=2)
 
@@ -353,10 +354,10 @@ while not glfw.window_should_close(window):
     # elif target1[0]-currentpos1[0] > abs(2):
     #     dpr1body = (target1-currentpos1)*0.01 + 0.001*(0 - currentvel1)
     # else:
-    dpr1body = (target1-currentpos1)*0.1*100 + 0.05*100*(0-currentvel1)
-    dpr2body = (target2-currentpos2)*0.1*100 + 0.05*100*(0-currentvel2)
-    dpr3body = (target3-currentpos3)*0.1*100 + 0.05*100*(0-currentvel3)
-    dpr4body = (target4-currentpos4)*0.1*100 + 0.05*100*(0-currentvel4)
+    dpr1body = (target1-currentpos1)*0.1*50 + 0.05*50*(0-currentvel1)
+    dpr2body = (target2-currentpos2)*0.1*50 + 0.05*50*(0-currentvel2)
+    dpr3body = (target3-currentpos3)*0.1*50 + 0.05*50*(0-currentvel3)
+    dpr4body = (target4-currentpos4)*0.1*50 + 0.05*50*(0-currentvel4)
     
     dpr1body[1] = dpr1body[1]*(-1)
     dpr2body[1] = dpr2body[1]*(-1)
@@ -365,10 +366,10 @@ while not glfw.window_should_close(window):
     
 
     #saturation limit to 60 degrees
-    dpr1body[0] = max(min(np.pi/3, dpr1body[0]), -np.pi/3); dpr1body[1] = max(min(np.pi/3, dpr1body[1]), -np.pi/3)
-    dpr2body[0] = max(min(np.pi/3, dpr2body[0]), -np.pi/3); dpr2body[1] = max(min(np.pi/3, dpr2body[1]), -np.pi/3)
-    dpr3body[0] = max(min(np.pi/3, dpr3body[0]), -np.pi/3); dpr3body[1] = max(min(np.pi/3, dpr3body[1]), -np.pi/3)
-    dpr4body[0] = max(min(np.pi/3, dpr4body[0]), -np.pi/3); dpr4body[1] = max(min(np.pi/3, dpr4body[1]), -np.pi/3)
+    dpr1body[0] = max(min(np.pi/4, dpr1body[0]), -np.pi/4); dpr1body[1] = max(min(np.pi/4, dpr1body[1]), -np.pi/4)
+    dpr2body[0] = max(min(np.pi/4, dpr2body[0]), -np.pi/4); dpr2body[1] = max(min(np.pi/4, dpr2body[1]), -np.pi/4)
+    dpr3body[0] = max(min(np.pi/4, dpr3body[0]), -np.pi/4); dpr3body[1] = max(min(np.pi/4, dpr3body[1]), -np.pi/4)
+    dpr4body[0] = max(min(np.pi/4, dpr4body[0]), -np.pi/4); dpr4body[1] = max(min(np.pi/4, dpr4body[1]), -np.pi/4)
 
 
     dpr1error = dpr1body-currentpr1
@@ -391,30 +392,30 @@ while not glfw.window_should_close(window):
 
 
 
-    prf1 = 12*2*dpr1error + 2*(0-bodyangvel1) #+ 1*dpr1error1
-    prf2 = 12*2*dpr2error + 2*(0-bodyangvel21) #+ 1*dpr2error1
-    prf3 = 12*2*dpr3error + 2*(0-bodyangvel31) #+ 1*dpr3error1
-    prf4 = 12*2*dpr4error + 2*(0-bodyangvel41) #+ 1*dpr4error1
+    prf1 = 5*2*dpr1error + 2*(0-bodyangvel1) #+ 1*dpr1error1
+    prf2 = 5*2*dpr2error + 2*(0-bodyangvel21)  #+ 1*dpr2error1
+    prf3 = 5*2*dpr3error + 2*(0-bodyangvel31) #+ 1*dpr3error1
+    prf4 = 5*2*dpr4error + 2*(0-bodyangvel41) #+ 1*dpr4error1
 
     zf = 50 + dpr1[2] #+ prf1[1] + prf1[0]
     rf = prf1[1]
-    pf = prf1[0]
+    pf = prf1[0] - 2*(currentpos1[0] - currentppos[0]  - 1)
     yf = 5*(0-yaw) + 3*(0-yawrate)
     # yf = kpr*(0 - yaw) - kdr*(bodyangvel1[2])
 
     zf2 = 50 + dpr2[2] #+ prf1[1] + prf1[0]
     rf2 = prf2[1]
-    pf2 = prf2[0]
+    pf2 = prf2[0] + 2*(currentpos2[0] - currentppos[0]  - 1)
     yf2 = 5*(0-yaw2) + 3*(0-yawrate2)
 
     zf3 = 50 + dpr3[2] #+ prf1[1] + prf1[0]
     rf3 = prf3[1]
-    pf3 = prf3[0]
+    pf3 = prf3[0] + 2*(currentpos3[0] - currentppos[0])
     yf3 = 5*(0-yaw3) + 3*(0-yawrate3)
 
     zf4 = 50 + dpr4[2] #+ prf1[1] + prf1[0]
     rf4 = prf4[1]
-    pf4 = prf4[0]
+    pf4 = prf4[0] + 2*(currentpos4[0] - currentppos[0])
     yf4 = 5*(0-yaw4) + 3*(0-yawrate4)
 
     print(currentpos1[0], currentpos2[0], currentpos3[1], currentpos4[1], currentpos1[2])
@@ -454,6 +455,7 @@ while not glfw.window_should_close(window):
         break
       
     if data.time>=2:
+        movement = 1
         target1 = target1 + np.array([0.01,0,0], ndmin=2).T
         target2 = target2 + np.array([0.01,0,0], ndmin=2).T
         target3 = target3 + np.array([0.01,0,0], ndmin=2).T
