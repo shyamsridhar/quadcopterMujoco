@@ -391,10 +391,10 @@ while not glfw.window_should_close(window):
 
 
 
-    prf1 = 12*2*dpr1error + 2*(0-bodyangvel1) #+ 1*dpr1error1
-    prf2 = 12*2*dpr2error + 2*(0-bodyangvel21) #+ 1*dpr2error1
-    prf3 = 12*2*dpr3error + 2*(0-bodyangvel31) #+ 1*dpr3error1
-    prf4 = 12*2*dpr4error + 2*(0-bodyangvel41) #+ 1*dpr4error1
+    prf1 = 5*3*dpr1error + 2*(0-bodyangvel1) #+ 1*dpr1error1
+    prf2 = 5*2*dpr2error + 2*(0-bodyangvel21)  #+ 1*dpr2error1
+    prf3 = 5*2*dpr3error + 2*(0-bodyangvel31) #+ 1*dpr3error1
+    prf4 = 5*2*dpr4error + 2*(0-bodyangvel41) #+ 1*dpr4error1
 
     zf = 50 + dpr1[2] #+ prf1[1] + prf1[0]
     rf = prf1[1]
@@ -417,7 +417,7 @@ while not glfw.window_should_close(window):
     pf4 = prf4[0]
     yf4 = 5*(0-yaw4) + 3*(0-yawrate4)
 
-    print(currentpos1[0], currentpos2[0], currentpos3[1], currentpos4[1], currentpos1[2])
+    print(target1[0], target2[0], currentpos1[2])
     #quad1
     data.ctrl[0] = zf[0]-rf[0]-pf[0]-yf
     data.ctrl[1] = zf[0]+rf[0]+pf[0]-yf
@@ -454,10 +454,11 @@ while not glfw.window_should_close(window):
         break
       
     if data.time>=2:
-        target1 = target1 + np.array([0.01,0,0], ndmin=2).T
-        target2 = target2 + np.array([0.01,0,0], ndmin=2).T
-        target3 = target3 + np.array([0.01,0,0], ndmin=2).T
-        target4 = target4 + np.array([0.01,0,0], ndmin=2).T
+        movement = 1
+        target1 = target1 + np.array([0.005,0,0], ndmin=2).T
+        target2 = target1 + np.array([-2,0,0], ndmin=2).T
+        target3 = target1 + np.array([-1,1,0], ndmin=2).T
+        target4 = target1 + np.array([-1,-1,0], ndmin=2).T
     
     # get framebuffer viewport
     viewport_width, viewport_height = glfw.get_framebuffer_size(
