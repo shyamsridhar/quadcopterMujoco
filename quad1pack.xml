@@ -18,26 +18,26 @@
         <light name="fixedlight" mode="fixed" directional="true"/>
         <geom name="floor" size="0 0 0.1" type="plane" material="grid" condim="3" friction="1 0 0"/>
 
-        <body name="quad1" pos="0.5 0 0.14825" euler='0 0 0'>
+        <body name="quad1" pos="1.4 1.4 0.14825" euler='0 0 0'>
             <freejoint name="root1"/>
             <geom  type="box" group="0"  size="0.05513 0.05513 0.0185" rgba="0.23 0.23 0.23 1"/>
             <site name="com" group="0" pos="0 0 0"/>
-            <body name="leg1" pos="0.0944 -0.0944 -0.085375" zaxis="-1 1 4">
+            <!-- <body name="leg1" pos="0.0944 -0.0944 -0.085375" zaxis="0 1 4">
                 <geom type="capsule" group="0" size="0.004 0.066875" />
                 <inertial pos="0 0 0" mass="0" diaginertia="0 0 0" /> 
             </body>
-            <body name="leg2" pos="-0.0944 0.0944 -0.085375" zaxis="1 -1 4">
+            <body name="leg2" pos="-0.0944 0.0944 -0.085375" zaxis="0 -1 4">
                 <geom type="capsule" group="0" size="0.004 0.066875" />
                 <inertial pos="0 0 0" mass="0" diaginertia="0 0 0" /> 
             </body>
-            <body name="leg3" pos="0.0944 0.0944 -0.085375" zaxis="-1 -1 4">
+            <body name="leg3" pos="0.0944 0.0944 -0.085375" zaxis="0 -1 4">
                 <geom type="capsule" group="0" size="0.004 0.066875" /> 
                 <inertial pos="0 0 0" mass="0" diaginertia="0 0 0" /> 
             </body>
-            <body name="leg4" pos="-0.0944 -0.0944 -0.085375" zaxis="1 1 4">
+            <body name="leg4" pos="-0.0944 -0.0944 -0.085375" zaxis="0 1 4">
                 <geom type="capsule" group="0" size="0.004 0.066875" />
                 <inertial pos="0 0 0" mass="0" diaginertia="0 0 0" /> 
-            </body>
+            </body> -->
             <body name="arm1" pos="0.0944 -0.0944 0" euler="0 0 315">
                 <geom type="box" group="0" size="0.0725 0.015865 0.0185" rgba="0.7 0 0 1"/>
                 <geom type="cylinder" group="0" pos="0.0915 0 0" euler="0 0 0" size="0.019 0.0185" rgba="0.7 0 0 1"/>
@@ -85,26 +85,26 @@
             <inertial pos="0 0 0" mass="1.5" fullinertia="0.00011 0.00011 0.00002 0.000000011 0.00000002 0.000000011" /> 
         </body>
 
-        <!-- <body name="quad2" pos="-1.4 0 0.14825" euler='0 0 0'>
+        <body name="quad2" pos="1.4 -1.4 0.14825" euler='0 0 0'>
             <freejoint name="root2"/>
             <geom  type="box" group="0"  size="0.05513 0.05513 0.0185" rgba="0.23 0.23 0.23 1"/>
             <site name="com2" group="0" pos="0 0 0"/>
-            <body name="leg21" pos="0.0944 -0.0944 -0.085375" zaxis="-1 1 4">
+            <!-- <body name="leg21" pos="0.0944 -0.0944 -0.085375" zaxis="0 1 4">
                 <geom type="capsule" group="0" size="0.004 0.066875" />
                 <inertial pos="0 0 0" mass="0" diaginertia="0 0 0" /> 
             </body>
-            <body name="leg22" pos="-0.0944 0.0944 -0.085375" zaxis="1 -1 4">
+            <body name="leg22" pos="-0.0944 0.0944 -0.085375" zaxis="0 -1 4">
                 <geom type="capsule" group="0" size="0.004 0.066875" />
                 <inertial pos="0 0 0" mass="0" diaginertia="0 0 0" /> 
             </body>
-            <body name="leg23" pos="0.0944 0.0944 -0.085375" zaxis="-1 -1 4">
+            <body name="leg23" pos="0.0944 0.0944 -0.085375" zaxis="0 -1 4">
                 <geom type="capsule" group="0" size="0.004 0.066875" /> 
                 <inertial pos="0 0 0" mass="0" diaginertia="0 0 0" /> 
             </body>
-            <body name="leg24" pos="-0.0944 -0.0944 -0.085375" zaxis="1 1 4">
+            <body name="leg24" pos="-0.0944 -0.0944 -0.085375" zaxis="0 1 4">
                 <geom type="capsule" group="0" size="0.004 0.066875" />
                 <inertial pos="0 0 0" mass="0" diaginertia="0 0 0" /> 
-            </body>
+            </body> -->
             <body name="arm21" pos="0.0944 -0.0944 0" euler="0 0 315">
                 <geom type="box" group="0" size="0.0725 0.015865 0.0185" rgba="0.7 0 0 1"/>
                 <geom type="cylinder" group="0" pos="0.0915 0 0" euler="0 0 0" size="0.019 0.0185" rgba="0.7 0 0 1"/>
@@ -152,26 +152,26 @@
             <inertial pos="0 0 0" mass="1.5" fullinertia="0.011 0.011 0.02 0.0011 0.002 0.0011" /> 
         </body>
 
-        <body name="quad3" pos="0 1.4 0.14825" euler='0 0 0'>
+       <body name="quad3" pos="-1.4 -1.4 0.14825" euler='0 0 0'>
             <freejoint name="root3"/>
             <geom  type="box" group="0"  size="0.05513 0.05513 0.0185" rgba="0.23 0.23 0.23 1"/>
             <site name="com3" group="0" pos="0 0 0"/>
-            <body name="leg31" pos="0.0944 -0.0944 -0.085375" zaxis="-1 1 4">
+            <!-- <body name="leg31" pos="0.0944 -0.0944 -0.085375" zaxis="0 1 4">
                 <geom type="capsule" group="0" size="0.004 0.066875" />
                 <inertial pos="0 0 0" mass="0" diaginertia="0 0 0" /> 
             </body>
-            <body name="leg32" pos="-0.0944 0.0944 -0.085375" zaxis="1 -1 4">
+            <body name="leg32" pos="-0.0944 0.0944 -0.085375" zaxis="0 -1 4">
                 <geom type="capsule" group="0" size="0.004 0.066875" />
                 <inertial pos="0 0 0" mass="0" diaginertia="0 0 0" /> 
             </body>
-            <body name="leg33" pos="0.0944 0.0944 -0.085375" zaxis="-1 -1 4">
+            <body name="leg33" pos="0.0944 0.0944 -0.085375" zaxis="0 -1 4">
                 <geom type="capsule" group="0" size="0.004 0.066875" /> 
                 <inertial pos="0 0 0" mass="0" diaginertia="0 0 0" /> 
             </body>
-            <body name="leg34" pos="-0.0944 -0.0944 -0.085375" zaxis="1 1 4">
+            <body name="leg34" pos="-0.0944 -0.0944 -0.085375" zaxis="0 1 4">
                 <geom type="capsule" group="0" size="0.004 0.066875" />
                 <inertial pos="0 0 0" mass="0" diaginertia="0 0 0" /> 
-            </body>
+            </body> -->
             <body name="arm31" pos="0.0944 -0.0944 0" euler="0 0 315">
                 <geom type="box" group="0" size="0.0725 0.015865 0.0185" rgba="0.7 0 0 1"/>
                 <geom type="cylinder" group="0" pos="0.0915 0 0" euler="0 0 0" size="0.019 0.0185" rgba="0.7 0 0 1"/>
@@ -219,26 +219,26 @@
             <inertial pos="0 0 0" mass="1.5" fullinertia="0.011 0.011 0.02 0.0011 0.002 0.0011" /> 
         </body>
 
-        <body name="quad4" pos="0 -1.4 0.14825" euler='0 0 0'>
+        <body name="quad4" pos="-1.4 1.4 0.14825" euler='0 0 0'>
             <freejoint name="root4"/>
             <geom  type="box" group="0"  size="0.05513 0.05513 0.0185" rgba="0.23 0.23 0.23 1"/>
             <site name="com4" group="0" pos="0 0 0"/>
-            <body name="leg41" pos="0.0944 -0.0944 -0.085375" zaxis="-1 1 4">
+            <!-- <body name="leg41" pos="0.0944 -0.0944 -0.085375" zaxis="0 1 4">
                 <geom type="capsule" group="0" size="0.004 0.066875" />
                 <inertial pos="0 0 0" mass="0" diaginertia="0 0 0" /> 
             </body>
-            <body name="leg42" pos="-0.0944 0.0944 -0.085375" zaxis="1 -1 4">
+            <body name="leg42" pos="-0.0944 0.0944 -0.085375" zaxis="0 -1 4">
                 <geom type="capsule" group="0" size="0.004 0.066875" />
                 <inertial pos="0 0 0" mass="0" diaginertia="0 0 0" /> 
             </body>
-            <body name="leg43" pos="0.0944 0.0944 -0.085375" zaxis="-1 -1 4">
+            <body name="leg43" pos="0.0944 0.0944 -0.085375" zaxis="0 -1 4">
                 <geom type="capsule" group="0" size="0.004 0.066875" /> 
                 <inertial pos="0 0 0" mass="0" diaginertia="0 0 0" /> 
             </body>
-            <body name="leg44" pos="-0.0944 -0.0944 -0.085375" zaxis="1 1 4">
+            <body name="leg44" pos="-0.0944 -0.0944 -0.085375" zaxis="0 1 4">
                 <geom type="capsule" group="0" size="0.004 0.066875" />
                 <inertial pos="0 0 0" mass="0" diaginertia="0 0 0" /> 
-            </body>
+            </body> -->
             <body name="arm41" pos="0.0944 -0.0944 0" euler="0 0 315">
                 <geom type="box" group="0" size="0.0725 0.015865 0.0185" rgba="0.7 0 0 1"/>
                 <geom type="cylinder" group="0" pos="0.0915 0 0" euler="0 0 0" size="0.019 0.0185" rgba="0.7 0 0 1"/>
@@ -284,92 +284,62 @@
                 <inertial pos="0 0 0" mass="0" diaginertia="0 0 0" /> 
             </body>
             <inertial pos="0 0 0" mass="1.5" fullinertia="0.011 0.011 0.02 0.0011 0.002 0.0011" /> 
-        </body> -->
+        </body>
 
         <body name="package" pos = "0 0 0.05" euler="0 0 0">
             <freejoint name="root"/>
             <geom type="box" group="0" size="0.05 0.05 0.05" rgba="0.8 0.5 0.23 1" />
-            <!-- <inertial pos="0 0 0" mass="0.1" diaginertia="0.000000001 0.000000001 0.000000001"/> -->
-            <inertial pos="0 0 0" mass="0.1"/>
+            <!-- <inertial pos="0 0 0" mass="0.1"/> -->
 
-            <body name="cable1" pos="0 0 0" euler="0 0 0"> 
-                <composite type="cable" curve="s" count="41 1 1" offset= "0 0 0.08" size="0.5" initial="none">
+            <!-- <body name="cable1" pos="0 0 0" euler="0 0 45"> 
+                <composite type="cable" curve="s" count="41 1 1" offset= "0 0 0.08" size="2" initial="none">
                     <joint kind="main" damping=".015"/>
                     <geom type="capsule" size=".005" rgba=".8 .2 .1 1" condim="1"/>          
                 </composite>
                 <inertial pos="0 0 0" mass="0.000001" diaginertia="0.000000001 0.000000001 0.000000001" />
             </body>
     
-            <!-- <body name="cable2" pos="0 0 0" euler="0 0 90"> 
-                <composite prefix="C" type="cable" curve="s" count="41 1 1" offset= "0 0 0.08" size="1.4" initial="none">
+            <body name="cable2" pos="0 0 0" euler="0 0 -45"> 
+                <composite prefix="C" type="cable" curve="s" count="41 1 1" offset= "0 0 0.08" size="2" initial="none">
                     <joint kind="main" damping=".015"/>
                     <geom type="capsule" size=".005" rgba=".8 .2 .1 1" condim="1"/>
                 </composite>
+                <inertial pos="0 0 0" mass="0.000001" diaginertia="0.000000001 0.000000001 0.000000001" />
             </body>
 
-            <body name="cable3" pos="0 0 0" euler="0 0 180"> 
-                <composite prefix="D" type="cable" curve="s" count="41 1 1" offset= "0 0 0.08" size="1.4" initial="none">
+           <body name="cable3" pos="0 0 0" euler="0 0 -135"> 
+                <composite prefix="D" type="cable" curve="s" count="41 1 1" offset= "0 0 0.08" size="2" initial="none">
                     <joint kind="main" damping=".015"/>
                     <geom type="capsule" size=".005" rgba=".8 .2 .1 1" condim="1"/>
                 </composite>
+                <inertial pos="0 0 0" mass="0.000001" diaginertia="0.000000001 0.000000001 0.000000001" />
             </body>
 
-            <body name="cable4" pos="0 0 0" euler="0 0 270"> 
-                <composite prefix="E" type="cable" curve="s" count="41 1 1" offset= "0 0 0.08" size="1.4" initial="none">
+             <body name="cable4" pos="0 0 0" euler="0 0 -225"> 
+                <composite prefix="E" type="cable" curve="s" count="41 1 1" offset= "0 0 0.08" size="2" initial="none">
                     <joint kind="main" damping=".015"/>
                     <geom type="capsule" size=".005" rgba=".8 .2 .1 1" condim="1"/>
                 </composite>
+                <inertial pos="0 0 0" mass="0.000001" diaginertia="0.000000001 0.000000001 0.000000001" />
             </body> -->
         </body>
 
     </worldbody>
 	
     <equality>
-        <weld name="quad1connect" body1="B_last" body2="quad1" anchor="0 0 -0.04" solref="-10000 -1000"/>
-        <!-- <weld name="quad2connect" body1="DB_last" body2="quad2" anchor="0 0 -0.04" solref="-10000 -1000"/>
-        <weld name="quad3connect" body1="CB_last" body2="quad3" anchor="0 0 -0.04" solref="-10000 -1000"/>
-        <weld name="quad4connect" body1="EB_last" body2="quad4" anchor="0 0 -0.04" solref="-10000 -1000"/> -->
-        <!-- <connect name="quad1connect" active="true" body1="quad1" body2="B_last" anchor="0 0 -0.02" solref="-10000 -1000"/> -->
-        <!-- In connect anchor is respect to body1 in weld anchor is with respect to body2 -->
-        
+        <!-- <weld name="quad1connect" body1="B_last" body2="quad1" anchor="0 0 -0.04" solref="-10000 -1000"/> -->
+        <!-- <weld name="quad3connect" body1="CB_last" body2="quad2" anchor="0 0 -0.04" solref="-10000 -1000"/>
+        <weld name="quad2connect" body1="DB_last" body2="quad3" anchor="0 0 -0.04" solref="-10000 -1000"/>
+        <weld name="quad4connect" body1="EB_last" body2="quad4" anchor="0 0 -0.04" solref="-10000 -1000"/>         -->
     </equality>
 
 
     <sensor>
-		<gyro name="gyroscope1" site="com" noise="1"/>
-        <!-- <gyro name="gyroscope2" site="com2" noise="1"/>
-        <gyro name="gyroscope3" site="com3" noise="1"/>
-        <gyro name="gyroscope4" site="com4" noise="1"/> -->
-
-        <accelerometer name="accel1" site="com" noise="1"/>
-        <!-- <accelerometer name="accel2" site="com2" noise="1"/>
-        <accelerometer name="accel3" site="com3" noise="1"/>
-        <accelerometer name="accel4" site="com4" noise="1"/> -->
-
-        <magnetometer name="mag1" site="com" noise="1"/>
-        <!-- <magnetometer name="mag2" site="com2" noise="1"/>
-        <magnetometer name="mag3" site="com3" noise="1"/>
-        <magnetometer name="mag4" site="com4" noise="1"/> -->
-
-        <framepos name="gps1" objtype="site" objname="com"/>
-        <!-- <framepos name="gps2" objtype="site" objname="com2"/>
-        <framepos name="gps3" objtype="site" objname="com3"/>
-        <framepos name="gps4" objtype="site" objname="com4"/> -->
 
         <framelinvel name="vel1" objtype="site" objname="com"/>
-        <!-- <framelinvel name="vel2" objtype="site" objname="com2"/>
+        <framelinvel name="vel2" objtype="site" objname="com2"/>
         <framelinvel name="vel3" objtype="site" objname="com3"/>
-        <framelinvel name="vel4" objtype="site" objname="com4"/> -->
-
-        <framequat name="quat1" objtype="site" objname="com"/>
-        <!-- <framequat name="quat2" objtype="site" objname="com2"/>
-        <framequat name="quat3" objtype="site" objname="com3"/>
-        <framequat name="quat4" objtype="site" objname="com4"/> -->
-
-        <frameangvel name="ang1" objtype="site" objname="com"/>
-        <!-- <frameangvel name="ang2" objtype="site" objname="com2"/>
-        <frameangvel name="ang3" objtype="site" objname="com3"/>
-        <frameangvel name="ang4" objtype="site" objname="com4"/> -->
+        <framelinvel name="vel4" objtype="site" objname="com4"/>
 
 	</sensor>
 	
@@ -379,7 +349,7 @@
 		<motor name="m3" ctrllimited="true" ctrlrange="0 100" gear="-0.0011" joint="motor3"/>
 		<motor name="m4" ctrllimited="true" ctrlrange="0 100" gear="-0.0011" joint="motor4"/>
 
-        <!-- <motor name="m21" ctrllimited="true" ctrlrange="0 100" gear="0.0011" joint="motor21"/>
+        <motor name="m21" ctrllimited="true" ctrlrange="0 100" gear="0.0011" joint="motor21"/>
 		<motor name="m22" ctrllimited="true" ctrlrange="0 100" gear="0.0011" joint="motor22"/>
 		<motor name="m23" ctrllimited="true" ctrlrange="0 100" gear="-0.0011" joint="motor23"/>
 		<motor name="m24" ctrllimited="true" ctrlrange="0 100" gear="-0.0011" joint="motor24"/>
@@ -392,6 +362,6 @@
         <motor name="m41" ctrllimited="true" ctrlrange="0 100" gear="0.0011" joint="motor41"/>
 		<motor name="m42" ctrllimited="true" ctrlrange="0 100" gear="0.0011" joint="motor42"/>
 		<motor name="m43" ctrllimited="true" ctrlrange="0 100" gear="-0.0011" joint="motor43"/>
-		<motor name="m44" ctrllimited="true" ctrlrange="0 100" gear="-0.0011" joint="motor44"/> -->
+		<motor name="m44" ctrllimited="true" ctrlrange="0 100" gear="-0.0011" joint="motor44"/>
     </actuator>
 </mujoco>

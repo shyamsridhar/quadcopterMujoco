@@ -26,7 +26,7 @@ import numpy as np
 import os
 from matplotlib import pyplot
 
-xml_path = 'quad4pack.xml'
+xml_path = 'quad1pack.xml'
 simend = 30
 print_camera_config = 0
 mot1 = []; mot2 = []; mot3 = []; mot4= []
@@ -39,10 +39,10 @@ lastx = 0
 lasty = 0
 
 #target for quad1
-target1 = np.array([1, 0, 5], ndmin=2).T
-target2 = np.array([-1, 0, 5], ndmin=2).T
-target3 = np.array([0, 1, 5], ndmin=2).T
-target4 = np.array([0, -1, 5], ndmin=2).T
+target1 = np.array([1.4, 1.4, 5], ndmin=2).T
+target2 = np.array([1.4, -1.4, 5], ndmin=2).T
+target3 = np.array([-1.4, -1.4, 5], ndmin=2).T
+target4 = np.array([-1.4, 1.4, 5], ndmin=2).T
 
 # kthr = 0.00005
 # ktrq = kthr/5
@@ -59,11 +59,10 @@ movement = 0
 
 
 #declaring body thrust and gyro torques as global
-th1, th2, th3, th4, tq1, tq2, tq3, tq4 = np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1))
-th21, th22, th23, th24, tq21, tq22, tq23, tq24 = np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1))
-th31, th32, th33, th34, tq31, tq32, tq33, tq34 = np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1))
-th41, th42, th43, th44, tq41, tq42, tq43, tq44 = np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1))
-
+th1, tq1 = np.zeros((3,4)), np.zeros((3,4))
+th2, tq2 = np.zeros((3,4)), np.zeros((3,4))
+th3, tq3 = np.zeros((3,4)), np.zeros((3,4))
+th4, tq4 = np.zeros((3,4)), np.zeros((3,4))
 
 def init_controller(model, data):
     data.qpos[2] = 0; data.qpos[13] = 0; data.qpos[24] = 0; data.qpos[35] = 0
@@ -88,78 +87,45 @@ def controller(model, data):
 
     # print(propvel)
 
-    global th1, th2, th3, th4, tq1, tq2, tq3, tq4, th21, th22, th23, th24, tq21, tq22, tq23, tq24, th31, th32, th33, th34, tq31, tq32, tq33, tq34, th41, th42, th43, th44, tq41, tq42, tq43, tq44
-    th1, th2, th3, th4, tq1, tq2, tq3, tq4 = np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1))
-    th21, th22, th23, th24, tq21, tq22, tq23, tq24 = np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1))
-    th31, th32, th33, th34, tq31, tq32, tq33, tq34 = np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1))
-    th41, th42, th43, th44, tq41, tq42, tq43, tq44 = np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1))
+    global th1, th2, th3, th4, tq1, tq2, tq3, tq4
+    th1, th2, th3, th4, tq1, tq2, tq3, tq4 = np.zeros((3,4)), np.zeros((3,4)), np.zeros((3,4)), np.zeros((3,4)), np.zeros((3,4)), np.zeros((3,4)), np.zeros((3,4)), np.zeros((3,4))
 
-    th1[2], th2[2], th3[2], th4[2] = thrust
-    tq1[2], tq2[2], tq3[2], tq4[2] = torque
-    th21[2], th22[2], th23[2], th24[2] = thrust2
-    tq21[2], tq22[2], tq23[2], tq24[2] = torque2
-    th31[2], th32[2], th33[2], th34[2] = thrust3
-    tq31[2], tq32[2], tq33[2], tq34[2] = torque3
-    th41[2], th42[2], th43[2], th44[2] = thrust4
-    tq41[2], tq42[2], tq43[2], tq44[2] = torque4
+    th1[2,:], th2[2,:], th3[2,:], th4[2,:] = thrust, thrust2, thrust3, thrust4
+    tq1[2,:], tq2[2,:], tq3[2,:], tq4[2,:] = torque, torque2, torque3, torque4
+
  
-
+    #thrust and torques in global coordinate frame
     th1a = np.matmul(R,th1)
-    th2a = np.matmul(R,th2)
-    th3a = np.matmul(R,th3)
-    th4a = np.matmul(R,th4)
+    th2a = np.matmul(R2,th2)
+    th3a = np.matmul(R3,th3)
+    th4a = np.matmul(R4,th4)
     tq1a = np.matmul(R,tq1)
-    tq2a = np.matmul(R,tq2)
-    tq3a = np.matmul(R,tq3)
-    tq4a = np.matmul(R,tq4)
+    tq2a = np.matmul(R2,tq2)
+    tq3a = np.matmul(R3,tq3)
+    tq4a = np.matmul(R4,tq4)
 
-    th21a = np.matmul(R2,th21)
-    th22a = np.matmul(R2,th22)
-    th23a = np.matmul(R2,th23)
-    th24a = np.matmul(R2,th24)
-    tq21a = np.matmul(R2,tq21)
-    tq22a = np.matmul(R2,tq22)
-    tq23a = np.matmul(R2,tq23)
-    tq24a = np.matmul(R2,tq24)
+    #xfrc. Find XFRC position based on body id of propellers
+    data.xfrc_applied[3][:] = np.concatenate((th1a[:,0],-tq1a[:,0]),axis=0).flatten()
+    data.xfrc_applied[5][:] = np.concatenate((th1a[:,1],-tq1a[:,1]),axis=0).flatten()
+    data.xfrc_applied[7][:] = np.concatenate((th1a[:,2],tq1a[:,2]),axis=0).flatten()
+    data.xfrc_applied[9][:] = np.concatenate((th1a[:,3],tq1a[:,3]),axis=0).flatten()
 
-    th31a = np.matmul(R3,th31)
-    th32a = np.matmul(R3,th32)
-    th33a = np.matmul(R3,th33)
-    th34a = np.matmul(R3,th34)
-    tq31a = np.matmul(R3,tq31)
-    tq32a = np.matmul(R3,tq32)
-    tq33a = np.matmul(R3,tq33)
-    tq34a = np.matmul(R3,tq34)
+    data.xfrc_applied[12][:] = np.concatenate((th2a[:,0],-tq2a[:,0]),axis=0).flatten()
+    data.xfrc_applied[14][:] = np.concatenate((th2a[:,1],-tq2a[:,1]),axis=0).flatten()
+    data.xfrc_applied[16][:] = np.concatenate((th2a[:,2],tq2a[:,2]),axis=0).flatten()
+    data.xfrc_applied[18][:] = np.concatenate((th2a[:,3],tq2a[:,3]),axis=0).flatten()
 
-    th41a = np.matmul(R4,th41)
-    th42a = np.matmul(R4,th42)
-    th43a = np.matmul(R4,th43)
-    th44a = np.matmul(R4,th44)
-    tq41a = np.matmul(R4,tq41)
-    tq42a = np.matmul(R4,tq42)
-    tq43a = np.matmul(R4,tq43)
-    tq44a = np.matmul(R4,tq44)
+    data.xfrc_applied[21][:] = np.concatenate((th3a[:,0],-tq3a[:,0]),axis=0).flatten()
+    data.xfrc_applied[23][:] = np.concatenate((th3a[:,1],-tq3a[:,1]),axis=0).flatten()
+    data.xfrc_applied[25][:] = np.concatenate((th3a[:,2],tq3a[:,2]),axis=0).flatten()
+    data.xfrc_applied[27][:] = np.concatenate((th3a[:,3],tq3a[:,3]),axis=0).flatten()
 
-    #xfrc. Find XFRC position based on body id
-    data.xfrc_applied[7][:] = np.concatenate((th1a,-tq1a),axis=0).flatten()
-    data.xfrc_applied[9][:] = np.concatenate((th2a,-tq2a),axis=0).flatten()
-    data.xfrc_applied[11][:] = np.concatenate((th3a,tq3a),axis=0).flatten()
-    data.xfrc_applied[13][:] = np.concatenate((th4a,tq4a),axis=0).flatten()
+    data.xfrc_applied[30][:] = np.concatenate((th4a[:,0],-tq4a[:,0]),axis=0).flatten()
+    data.xfrc_applied[32][:] = np.concatenate((th4a[:,1],-tq4a[:,1]),axis=0).flatten()
+    data.xfrc_applied[34][:] = np.concatenate((th4a[:,2],tq4a[:,2]),axis=0).flatten()
+    data.xfrc_applied[36][:] = np.concatenate((th4a[:,3],tq4a[:,3]),axis=0).flatten()
 
-    data.xfrc_applied[20][:] = np.concatenate((th21a,-tq21a),axis=0).flatten()
-    data.xfrc_applied[22][:] = np.concatenate((th22a,-tq22a),axis=0).flatten()
-    data.xfrc_applied[24][:] = np.concatenate((th23a,tq23a),axis=0).flatten()
-    data.xfrc_applied[26][:] = np.concatenate((th24a,tq24a),axis=0).flatten()
 
-    data.xfrc_applied[33][:] = np.concatenate((th31a,-tq31a),axis=0).flatten()
-    data.xfrc_applied[35][:] = np.concatenate((th32a,-tq32a),axis=0).flatten()
-    data.xfrc_applied[37][:] = np.concatenate((th33a,tq33a),axis=0).flatten()
-    data.xfrc_applied[39][:] = np.concatenate((th34a,tq34a),axis=0).flatten()
-
-    data.xfrc_applied[46][:] = np.concatenate((th41a,-tq41a),axis=0).flatten()
-    data.xfrc_applied[48][:] = np.concatenate((th42a,-tq42a),axis=0).flatten()
-    data.xfrc_applied[50][:] = np.concatenate((th43a,tq43a),axis=0).flatten()
-    data.xfrc_applied[52][:] = np.concatenate((th44a,tq44a),axis=0).flatten()
 
 def keyboard(window, key, scancode, act, mods):
     if act == glfw.PRESS and key == glfw.KEY_BACKSPACE:
@@ -328,7 +294,7 @@ while not glfw.window_should_close(window):
     ##based on quadcopter matlab
     # currentpos1 = np.array(data.sensordata[24:27], ndmin=2).T; currentpos2 = np.array(data.sensordata[27:30], ndmin=2).T; currentpos3 = np.array(data.sensordata[30:33], ndmin=2).T; currentpos4 = np.array(data.sensordata[33:36], ndmin=2).T
     currentpos1 = np.array(data.qpos[0:3], ndmin=2).T; currentpos2 = np.array(data.qpos[11:14], ndmin=2).T; currentpos3 = np.array(data.qpos[22:25], ndmin=2).T; currentpos4 = np.array(data.qpos[33:36], ndmin=2).T
-    currentvel1 = np.array(data.sensordata[0:3], ndmin=2).T; currentvel2 = np.array(data.sensordata[3:6], ndmin=2).T; currentvel3 = np.array(data.sensordata[6:9], ndmin=2).T; currentvel4 = np.array(data.sensordata[9:12], ndmin=2).T; currentppos = np.array(data.sensordata[12:15], ndmin=2).T
+    currentvel1 = np.array(data.sensordata[0:3], ndmin=2).T; currentvel2 = np.array(data.sensordata[3:6], ndmin=2).T; currentvel3 = np.array(data.sensordata[6:9], ndmin=2).T; currentvel4 = np.array(data.sensordata[9:12], ndmin=2).T
     currentpr1 = np.array([pitch, roll, yaw], ndmin=2).T; currentpr2 = np.array([pitch2, roll2, yaw2], ndmin=2).T; currentpr3 = np.array([pitch3, roll3, yaw3], ndmin=2).T; currentpr4 = np.array([pitch4, roll4, yaw4], ndmin=2).T
     # currentrp1vel = np.array(data.sensordata[0:3], ndmin=2); currentrp2vel = np.array(data.sensordata[3:6], ndmin=2); currentrp3vel = np.array(data.sensordata[6:9], ndmin=2); currentrp4vel = np.array(data.sensordata[9:12], ndmin=2)
 
@@ -380,42 +346,30 @@ while not glfw.window_should_close(window):
     if data.time > 1:
         breakpoint
 
-    # if data.time > 5:
-    #     dpr1error1 = dpr1error1 + dpr1error*(data.time-t_2)
-    #     dpr2error1 = dpr2error1 + dpr2error*(data.time-t_2)
-    #     # print(data.time-t_2)
-    #     t_2 = data.time
-    # else:
-    #     dpr1error1 = dpr1error
-    #     dpr2error1 = dpr2error
-    #     t_2 = data.time
 
-
-
-    prf1 = 5*2*dpr1error + 2*(0-bodyangvel1) #+ 1*dpr1error1
-    prf2 = 5*2*dpr2error + 2*(0-bodyangvel21)  #+ 1*dpr2error1
-    prf3 = 5*2*dpr3error + 2*(0-bodyangvel31) #+ 1*dpr3error1
-    prf4 = 5*2*dpr4error + 2*(0-bodyangvel41) #+ 1*dpr4error1
+    prf1 = 5*2*dpr1error + 2*(0-bodyangvel1)
+    prf2 = 5*2*dpr2error + 2*(0-bodyangvel21)
+    prf3 = 5*2*dpr3error + 2*(0-bodyangvel31)
+    prf4 = 5*2*dpr4error + 2*(0-bodyangvel41)
 
     zf = 50 + dpr1[2] #+ prf1[1] + prf1[0]
     rf = prf1[1]
-    pf = prf1[0] - 2*(currentpos1[0] - currentppos[0]  - 1)
+    pf = prf1[0]
     yf = 5*(0-yaw) + 3*(0-yawrate)
-    # yf = kpr*(0 - yaw) - kdr*(bodyangvel1[2])
 
     zf2 = 50 + dpr2[2] #+ prf1[1] + prf1[0]
     rf2 = prf2[1]
-    pf2 = prf2[0] + 2*(currentpos2[0] - currentppos[0]  - 1)
+    pf2 = prf2[0]
     yf2 = 5*(0-yaw2) + 3*(0-yawrate2)
 
     zf3 = 50 + dpr3[2] #+ prf1[1] + prf1[0]
     rf3 = prf3[1]
-    pf3 = prf3[0] + 2*(currentpos3[0] - currentppos[0])
+    pf3 = prf3[0]
     yf3 = 5*(0-yaw3) + 3*(0-yawrate3)
 
     zf4 = 50 + dpr4[2] #+ prf1[1] + prf1[0]
     rf4 = prf4[1]
-    pf4 = prf4[0] + 2*(currentpos4[0] - currentppos[0])
+    pf4 = prf4[0]
     yf4 = 5*(0-yaw4) + 3*(0-yawrate4)
 
     print(currentpos1[0], currentpos2[0], currentpos3[1], currentpos4[1], currentpos1[2])
@@ -458,8 +412,8 @@ while not glfw.window_should_close(window):
         movement = 1
         target1 = target1 + np.array([0.01,0,0], ndmin=2).T
         target2 = target2 + np.array([0.01,0,0], ndmin=2).T
-        target3 = target3 + np.array([0.01,0,0], ndmin=2).T
-        target4 = target4 + np.array([0.01,0,0], ndmin=2).T
+        target3 = currentpos2 + np.array([0.01,0,0], ndmin=2).T
+        target4 = currentpos1 + np.array([0.01,0,0], ndmin=2).T
     
     # get framebuffer viewport
     viewport_width, viewport_height = glfw.get_framebuffer_size(
