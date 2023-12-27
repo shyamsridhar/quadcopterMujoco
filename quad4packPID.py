@@ -66,7 +66,7 @@ th3, tq3 = np.zeros((3,4)), np.zeros((3,4))
 th4, tq4 = np.zeros((3,4)), np.zeros((3,4))
 
 def init_controller(model, data):
-    data.qpos[2] = 0; data.qpos[13] = 0; data.qpos[24] = 0; data.qpos[35] = 0
+    data.qpos[2] = 0.1; data.qpos[13] = 0.1; data.qpos[24] = 0.1; data.qpos[35] = 0.1
     data.qvel[:] = 0
     pass
 
@@ -106,25 +106,25 @@ def controller(model, data):
     tq4a = np.matmul(R4,tq4)
 
     #xfrc. Find XFRC position based on body id of propellers
-    data.xfrc_applied[3][:] = np.concatenate((th1a[:,0],-tq1a[:,0]),axis=0).flatten()
-    data.xfrc_applied[5][:] = np.concatenate((th1a[:,1],-tq1a[:,1]),axis=0).flatten()
-    data.xfrc_applied[7][:] = np.concatenate((th1a[:,2],tq1a[:,2]),axis=0).flatten()
-    data.xfrc_applied[9][:] = np.concatenate((th1a[:,3],tq1a[:,3]),axis=0).flatten()
+    data.xfrc_applied[11][:] = np.concatenate((th1a[:,0],-tq1a[:,0]),axis=0).flatten()
+    data.xfrc_applied[13][:] = np.concatenate((th1a[:,1],-tq1a[:,1]),axis=0).flatten()
+    data.xfrc_applied[15][:] = np.concatenate((th1a[:,2],tq1a[:,2]),axis=0).flatten()
+    data.xfrc_applied[17][:] = np.concatenate((th1a[:,3],tq1a[:,3]),axis=0).flatten()
 
-    # data.xfrc_applied[12][:] = np.concatenate((th2a[:,0],-tq2a[:,0]),axis=0).flatten()
-    # data.xfrc_applied[14][:] = np.concatenate((th2a[:,1],-tq2a[:,1]),axis=0).flatten()
-    # data.xfrc_applied[16][:] = np.concatenate((th2a[:,2],tq2a[:,2]),axis=0).flatten()
-    # data.xfrc_applied[18][:] = np.concatenate((th2a[:,3],tq2a[:,3]),axis=0).flatten()
+    # data.xfrc_applied[24][:] = np.concatenate((th2a[:,0],-tq2a[:,0]),axis=0).flatten()
+    # data.xfrc_applied[26][:] = np.concatenate((th2a[:,1],-tq2a[:,1]),axis=0).flatten()
+    # data.xfrc_applied[28][:] = np.concatenate((th2a[:,2],tq2a[:,2]),axis=0).flatten()
+    # data.xfrc_applied[30][:] = np.concatenate((th2a[:,3],tq2a[:,3]),axis=0).flatten()
 
-    # data.xfrc_applied[21][:] = np.concatenate((th3a[:,0],-tq3a[:,0]),axis=0).flatten()
-    # data.xfrc_applied[23][:] = np.concatenate((th3a[:,1],-tq3a[:,1]),axis=0).flatten()
-    # data.xfrc_applied[25][:] = np.concatenate((th3a[:,2],tq3a[:,2]),axis=0).flatten()
-    # data.xfrc_applied[27][:] = np.concatenate((th3a[:,3],tq3a[:,3]),axis=0).flatten()
+    # data.xfrc_applied[37][:] = np.concatenate((th3a[:,0],-tq3a[:,0]),axis=0).flatten()
+    # data.xfrc_applied[39][:] = np.concatenate((th3a[:,1],-tq3a[:,1]),axis=0).flatten()
+    # data.xfrc_applied[41][:] = np.concatenate((th3a[:,2],tq3a[:,2]),axis=0).flatten()
+    # data.xfrc_applied[43][:] = np.concatenate((th3a[:,3],tq3a[:,3]),axis=0).flatten()
 
-    # data.xfrc_applied[30][:] = np.concatenate((th4a[:,0],-tq4a[:,0]),axis=0).flatten()
-    # data.xfrc_applied[32][:] = np.concatenate((th4a[:,1],-tq4a[:,1]),axis=0).flatten()
-    # data.xfrc_applied[34][:] = np.concatenate((th4a[:,2],tq4a[:,2]),axis=0).flatten()
-    # data.xfrc_applied[36][:] = np.concatenate((th4a[:,3],tq4a[:,3]),axis=0).flatten()
+    # data.xfrc_applied[50][:] = np.concatenate((th4a[:,0],-tq4a[:,0]),axis=0).flatten()
+    # data.xfrc_applied[52][:] = np.concatenate((th4a[:,1],-tq4a[:,1]),axis=0).flatten()
+    # data.xfrc_applied[54][:] = np.concatenate((th4a[:,2],tq4a[:,2]),axis=0).flatten()
+    # data.xfrc_applied[56][:] = np.concatenate((th4a[:,3],tq4a[:,3]),axis=0).flatten()
 
 
 
@@ -314,15 +314,20 @@ while not glfw.window_should_close(window):
     dpr3 = 10*(target3-currentpos3) + 6*(0-currentvel3) + 2*error3
     dpr4 = 10*(target4-currentpos4) + 6*(0-currentvel4) + 2*error4
     
-    dpr1body = (target1-currentpos1)*0.1 + 0.05*(0-currentvel1) + 12*package*(target1-currentpos1) + 4*package*(0-currentvel1)
-    dpr2body = (target2-currentpos2)*0.1 + 0.05*(0-currentvel2) + 12*package*(target2-currentpos2) + 4*package*(0-currentvel2)
-    dpr3body = (target3-currentpos3)*0.1 + 0.05*(0-currentvel3) + 12*package*(target3-currentpos3) + 4*package*(0-currentvel3)
-    dpr4body = (target4-currentpos4)*0.1 + 0.05*(0-currentvel4) + 12*package*(target2-currentpos2) + 4*package*(0-currentvel2)
+    # dpr1body = (target1-currentpos1)*0.1 + 0.05*(0-currentvel1) + 12*package*(target1-currentpos1) + 4*package*(0-currentvel1)
+    # dpr2body = (target2-currentpos2)*0.1 + 0.05*(0-currentvel2) + 12*package*(target2-currentpos2) + 4*package*(0-currentvel2)
+    # dpr3body = (target3-currentpos3)*0.1 + 0.05*(0-currentvel3) + 12*package*(target3-currentpos3) + 4*package*(0-currentvel3)
+    # dpr4body = (target4-currentpos4)*0.1 + 0.05*(0-currentvel4) + 12*package*(target2-currentpos2) + 4*package*(0-currentvel2)
 
     # dpr1body = (target1-currentpos1)*0.1*50 + 0.05*50*(0-currentvel1)
     # dpr2body = (target2-currentpos2)*0.1*50 + 0.05*50*(0-currentvel2)
     # dpr3body = (target3-currentpos3)*0.1*50 + 0.05*50*(0-currentvel3)
     # dpr4body = (target4-currentpos4)*0.1*50 + 0.05*50*(0-currentvel4)
+
+    dpr1body = (target1-currentpos1)*0.1 + 0.05*(0-currentvel1)
+    dpr2body = (target2-currentpos2)*0.1 + 0.05*(0-currentvel2)
+    dpr3body = (target3-currentpos3)*0.1 + 0.05*(0-currentvel3)
+    dpr4body = (target4-currentpos4)*0.1 + 0.05*(0-currentvel4)
     
     dpr1body[1] = dpr1body[1]*(-1)
     dpr2body[1] = dpr2body[1]*(-1)
