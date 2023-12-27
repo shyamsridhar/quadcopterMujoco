@@ -18,7 +18,7 @@
         <light name="fixedlight" mode="fixed" directional="true"/>
         <geom name="floor" size="0 0 0.1" type="plane" material="grid" condim="3" friction="1 0 0"/>
 
-        <body name="quad1" pos="1.4 1.4 0.14825" euler='0 0 0'>
+        <body name="quad1" pos="1 1 0.0185" euler='0 0 0'>
             <freejoint name="root1"/>
             <geom  type="box" group="0"  size="0.05513 0.05513 0.0185" rgba="0.23 0.23 0.23 1"/>
             <site name="com" group="0" pos="0 0 0"/>
@@ -85,7 +85,7 @@
             <inertial pos="0 0 0" mass="1.5" fullinertia="0.00011 0.00011 0.00002 0.000000011 0.00000002 0.000000011" /> 
         </body>
 
-        <body name="quad2" pos="1.4 -1.4 0.14825" euler='0 0 0'>
+        <body name="quad2" pos="1 -1 0.0185" euler='0 0 0'>
             <freejoint name="root2"/>
             <geom  type="box" group="0"  size="0.05513 0.05513 0.0185" rgba="0.23 0.23 0.23 1"/>
             <site name="com2" group="0" pos="0 0 0"/>
@@ -152,7 +152,7 @@
             <inertial pos="0 0 0" mass="1.5" fullinertia="0.011 0.011 0.02 0.0011 0.002 0.0011" /> 
         </body>
 
-       <body name="quad3" pos="-1.4 -1.4 0.14825" euler='0 0 0'>
+       <body name="quad3" pos="-1 -1 0.0185" euler='0 0 0'>
             <freejoint name="root3"/>
             <geom  type="box" group="0"  size="0.05513 0.05513 0.0185" rgba="0.23 0.23 0.23 1"/>
             <site name="com3" group="0" pos="0 0 0"/>
@@ -219,7 +219,7 @@
             <inertial pos="0 0 0" mass="1.5" fullinertia="0.011 0.011 0.02 0.0011 0.002 0.0011" /> 
         </body>
 
-        <body name="quad4" pos="-1.4 1.4 0.14825" euler='0 0 0'>
+        <body name="quad4" pos="-1 1 0.0185" euler='0 0 0'>
             <freejoint name="root4"/>
             <geom  type="box" group="0"  size="0.05513 0.05513 0.0185" rgba="0.23 0.23 0.23 1"/>
             <site name="com4" group="0" pos="0 0 0"/>
@@ -289,34 +289,34 @@
         <body name="package" pos = "0 0 0.05" euler="0 0 0">
             <freejoint name="root"/>
             <geom type="box" group="0" size="0.05 0.05 0.05" rgba="0.8 0.5 0.23 1" />
-            <!-- <inertial pos="0 0 0" mass="0.1"/> -->
+            <inertial pos="0 0 0" mass="0.5"/>
 
-            <!-- <body name="cable1" pos="0 0 0" euler="0 0 45"> 
-                <composite type="cable" curve="s" count="41 1 1" offset= "0 0 0.08" size="2" initial="none">
+            <body name="cable1" pos="0 0 -0.05" euler="0 0 45"> 
+                <composite type="cable" curve="s" count="41 1 1" offset= "0 0 0" size="1.4" initial="none">
                     <joint kind="main" damping=".015"/>
                     <geom type="capsule" size=".005" rgba=".8 .2 .1 1" condim="1"/>          
                 </composite>
                 <inertial pos="0 0 0" mass="0.000001" diaginertia="0.000000001 0.000000001 0.000000001" />
             </body>
     
-            <body name="cable2" pos="0 0 0" euler="0 0 -45"> 
-                <composite prefix="C" type="cable" curve="s" count="41 1 1" offset= "0 0 0.08" size="2" initial="none">
+            <!-- <body name="cable2" pos="0 0 0" euler="0 0 -45"> 
+                <composite prefix="C" type="cable" curve="s" count="41 1 1" offset= "0 0 0.08" size="1.4" initial="none">
                     <joint kind="main" damping=".015"/>
                     <geom type="capsule" size=".005" rgba=".8 .2 .1 1" condim="1"/>
                 </composite>
                 <inertial pos="0 0 0" mass="0.000001" diaginertia="0.000000001 0.000000001 0.000000001" />
-            </body>
-
-           <body name="cable3" pos="0 0 0" euler="0 0 -135"> 
-                <composite prefix="D" type="cable" curve="s" count="41 1 1" offset= "0 0 0.08" size="2" initial="none">
+            </body> -->
+<!-- 
+           <body name="cable3" pos="0 0 -0.05" euler="0 0 -135"> 
+                <composite prefix="D" type="cable" curve="s" count="41 1 1" offset= "0 0 0" size="1.4" initial="ball">
                     <joint kind="main" damping=".015"/>
                     <geom type="capsule" size=".005" rgba=".8 .2 .1 1" condim="1"/>
                 </composite>
                 <inertial pos="0 0 0" mass="0.000001" diaginertia="0.000000001 0.000000001 0.000000001" />
-            </body>
+            </body> -->
 
-             <body name="cable4" pos="0 0 0" euler="0 0 -225"> 
-                <composite prefix="E" type="cable" curve="s" count="41 1 1" offset= "0 0 0.08" size="2" initial="none">
+             <!-- <body name="cable4" pos="0 0 0" euler="0 0 -225"> 
+                <composite prefix="E" type="cable" curve="s" count="41 1 1" offset= "0 0 0.08" size="1.4" initial="none">
                     <joint kind="main" damping=".015"/>
                     <geom type="capsule" size=".005" rgba=".8 .2 .1 1" condim="1"/>
                 </composite>
@@ -328,9 +328,9 @@
 	
     <equality>
         <!-- <weld name="quad1connect" body1="B_last" body2="quad1" anchor="0 0 -0.04" solref="-10000 -1000"/> -->
-        <!-- <weld name="quad3connect" body1="CB_last" body2="quad2" anchor="0 0 -0.04" solref="-10000 -1000"/>
-        <weld name="quad2connect" body1="DB_last" body2="quad3" anchor="0 0 -0.04" solref="-10000 -1000"/>
-        <weld name="quad4connect" body1="EB_last" body2="quad4" anchor="0 0 -0.04" solref="-10000 -1000"/>         -->
+        <!-- <weld name="quad3connect" body1="CB_last" body2="quad2" anchor="0 0 -0.04" solref="-10000 -1000"/> -->
+        <!-- <weld name="quad2connect" body1="DB_last" body2="quad3" anchor="0 0 -0.04" solref="-10000 -1000"/> -->
+        <!-- <weld name="quad4connect" body1="EB_last" body2="quad4" anchor="0 0 -0.04" solref="-10000 -1000"/>         -->
     </equality>
 
 

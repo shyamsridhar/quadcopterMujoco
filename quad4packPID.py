@@ -39,9 +39,9 @@ lastx = 0
 lasty = 0
 
 #target for quad1
-target1 = np.array([1.4, 1.4, 5], ndmin=2).T
+target1 = np.array([1, 1, 5], ndmin=2).T
 target2 = np.array([1.4, -1.4, 5], ndmin=2).T
-target3 = np.array([-1.4, -1.4, 5], ndmin=2).T
+target3 = np.array([-1, -1, 5], ndmin=2).T
 target4 = np.array([-1.4, 1.4, 5], ndmin=2).T
 
 # kthr = 0.00005
@@ -55,6 +55,7 @@ ki = 5
 kpr=20
 kdr=20
 movement = 0
+package = 1
 
 
 
@@ -110,20 +111,20 @@ def controller(model, data):
     data.xfrc_applied[7][:] = np.concatenate((th1a[:,2],tq1a[:,2]),axis=0).flatten()
     data.xfrc_applied[9][:] = np.concatenate((th1a[:,3],tq1a[:,3]),axis=0).flatten()
 
-    data.xfrc_applied[12][:] = np.concatenate((th2a[:,0],-tq2a[:,0]),axis=0).flatten()
-    data.xfrc_applied[14][:] = np.concatenate((th2a[:,1],-tq2a[:,1]),axis=0).flatten()
-    data.xfrc_applied[16][:] = np.concatenate((th2a[:,2],tq2a[:,2]),axis=0).flatten()
-    data.xfrc_applied[18][:] = np.concatenate((th2a[:,3],tq2a[:,3]),axis=0).flatten()
+    # data.xfrc_applied[12][:] = np.concatenate((th2a[:,0],-tq2a[:,0]),axis=0).flatten()
+    # data.xfrc_applied[14][:] = np.concatenate((th2a[:,1],-tq2a[:,1]),axis=0).flatten()
+    # data.xfrc_applied[16][:] = np.concatenate((th2a[:,2],tq2a[:,2]),axis=0).flatten()
+    # data.xfrc_applied[18][:] = np.concatenate((th2a[:,3],tq2a[:,3]),axis=0).flatten()
 
-    data.xfrc_applied[21][:] = np.concatenate((th3a[:,0],-tq3a[:,0]),axis=0).flatten()
-    data.xfrc_applied[23][:] = np.concatenate((th3a[:,1],-tq3a[:,1]),axis=0).flatten()
-    data.xfrc_applied[25][:] = np.concatenate((th3a[:,2],tq3a[:,2]),axis=0).flatten()
-    data.xfrc_applied[27][:] = np.concatenate((th3a[:,3],tq3a[:,3]),axis=0).flatten()
+    # data.xfrc_applied[21][:] = np.concatenate((th3a[:,0],-tq3a[:,0]),axis=0).flatten()
+    # data.xfrc_applied[23][:] = np.concatenate((th3a[:,1],-tq3a[:,1]),axis=0).flatten()
+    # data.xfrc_applied[25][:] = np.concatenate((th3a[:,2],tq3a[:,2]),axis=0).flatten()
+    # data.xfrc_applied[27][:] = np.concatenate((th3a[:,3],tq3a[:,3]),axis=0).flatten()
 
-    data.xfrc_applied[30][:] = np.concatenate((th4a[:,0],-tq4a[:,0]),axis=0).flatten()
-    data.xfrc_applied[32][:] = np.concatenate((th4a[:,1],-tq4a[:,1]),axis=0).flatten()
-    data.xfrc_applied[34][:] = np.concatenate((th4a[:,2],tq4a[:,2]),axis=0).flatten()
-    data.xfrc_applied[36][:] = np.concatenate((th4a[:,3],tq4a[:,3]),axis=0).flatten()
+    # data.xfrc_applied[30][:] = np.concatenate((th4a[:,0],-tq4a[:,0]),axis=0).flatten()
+    # data.xfrc_applied[32][:] = np.concatenate((th4a[:,1],-tq4a[:,1]),axis=0).flatten()
+    # data.xfrc_applied[34][:] = np.concatenate((th4a[:,2],tq4a[:,2]),axis=0).flatten()
+    # data.xfrc_applied[36][:] = np.concatenate((th4a[:,3],tq4a[:,3]),axis=0).flatten()
 
 
 
@@ -308,22 +309,20 @@ while not glfw.window_should_close(window):
     else:
         t_1 = data.time
 
-    dpr1 = kp*(target1-currentpos1) + kd*(0-currentvel1) + ki*error
-    dpr2 = kp*(target2-currentpos2) + kd*(0-currentvel2) + ki*error2
-    dpr3 = kp*(target3-currentpos3) + kd*(0-currentvel3) + ki*error3
-    dpr4 = kp*(target4-currentpos4) + kd*(0-currentvel4) + ki*error4
+    dpr1 = 10*(target1-currentpos1) + 6*(0-currentvel1) + 2*error
+    dpr2 = 10*(target2-currentpos2) + 6*(0-currentvel2) + 2*error2
+    dpr3 = 10*(target3-currentpos3) + 6*(0-currentvel3) + 2*error3
+    dpr4 = 10*(target4-currentpos4) + 6*(0-currentvel4) + 2*error4
     
-    #calculate desired rp angles in body frame
-    # dpr1body = np.matmul(R.T, target1-currentpos1)
-    # if target1[0]-currentpos1[0] > abs(4):
-    #     dpr1body = (target1-currentpos1)*0.1 + 0.05*(0-currentvel1)
-    # elif target1[0]-currentpos1[0] > abs(2):
-    #     dpr1body = (target1-currentpos1)*0.01 + 0.001*(0 - currentvel1)
-    # else:
-    dpr1body = (target1-currentpos1)*0.1*50 + 0.05*50*(0-currentvel1)
-    dpr2body = (target2-currentpos2)*0.1*50 + 0.05*50*(0-currentvel2)
-    dpr3body = (target3-currentpos3)*0.1*50 + 0.05*50*(0-currentvel3)
-    dpr4body = (target4-currentpos4)*0.1*50 + 0.05*50*(0-currentvel4)
+    dpr1body = (target1-currentpos1)*0.1 + 0.05*(0-currentvel1) + 12*package*(target1-currentpos1) + 4*package*(0-currentvel1)
+    dpr2body = (target2-currentpos2)*0.1 + 0.05*(0-currentvel2) + 12*package*(target2-currentpos2) + 4*package*(0-currentvel2)
+    dpr3body = (target3-currentpos3)*0.1 + 0.05*(0-currentvel3) + 12*package*(target3-currentpos3) + 4*package*(0-currentvel3)
+    dpr4body = (target4-currentpos4)*0.1 + 0.05*(0-currentvel4) + 12*package*(target2-currentpos2) + 4*package*(0-currentvel2)
+
+    # dpr1body = (target1-currentpos1)*0.1*50 + 0.05*50*(0-currentvel1)
+    # dpr2body = (target2-currentpos2)*0.1*50 + 0.05*50*(0-currentvel2)
+    # dpr3body = (target3-currentpos3)*0.1*50 + 0.05*50*(0-currentvel3)
+    # dpr4body = (target4-currentpos4)*0.1*50 + 0.05*50*(0-currentvel4)
     
     dpr1body[1] = dpr1body[1]*(-1)
     dpr2body[1] = dpr2body[1]*(-1)
@@ -352,27 +351,27 @@ while not glfw.window_should_close(window):
     prf3 = 5*2*dpr3error + 2*(0-bodyangvel31)
     prf4 = 5*2*dpr4error + 2*(0-bodyangvel41)
 
-    zf = 50 + dpr1[2] #+ prf1[1] + prf1[0]
+    zf = 50 + dpr1[2] 
     rf = prf1[1]
     pf = prf1[0]
     yf = 5*(0-yaw) + 3*(0-yawrate)
 
-    zf2 = 50 + dpr2[2] #+ prf1[1] + prf1[0]
+    zf2 = 50 + dpr2[2]
     rf2 = prf2[1]
     pf2 = prf2[0]
     yf2 = 5*(0-yaw2) + 3*(0-yawrate2)
 
-    zf3 = 50 + dpr3[2] #+ prf1[1] + prf1[0]
+    zf3 = 50 + dpr3[2]
     rf3 = prf3[1]
     pf3 = prf3[0]
     yf3 = 5*(0-yaw3) + 3*(0-yawrate3)
 
-    zf4 = 50 + dpr4[2] #+ prf1[1] + prf1[0]
+    zf4 = 50 + dpr4[2]
     rf4 = prf4[1]
     pf4 = prf4[0]
     yf4 = 5*(0-yaw4) + 3*(0-yawrate4)
 
-    print(currentpos1[0], currentpos2[0], currentpos3[1], currentpos4[1], currentpos1[2])
+    print(currentpos1[0], currentpos1[1], currentpos1[2], currentpos3[0], currentpos3[1], currentpos3[2])
     #quad1
     data.ctrl[0] = zf[0]-rf[0]-pf[0]-yf
     data.ctrl[1] = zf[0]+rf[0]+pf[0]-yf
@@ -397,10 +396,6 @@ while not glfw.window_should_close(window):
     data.ctrl[14] = zf4[0]+rf4[0]-pf4[0]+yf4
     data.ctrl[15] = zf4[0]-rf4[0]+pf4[0]+yf4
 
-    # pyplot.figure(1)
-    # pyplot.plot(data.ctrl[0], data.time)
-    # pyplot.show()
-
     for _ in range(2):
       mj.mj_step(model, data)
 
@@ -408,12 +403,12 @@ while not glfw.window_should_close(window):
     if (data.time>=simend):
         break
       
-    if data.time>=2:
-        movement = 1
-        target1 = target1 + np.array([0.01,0,0], ndmin=2).T
-        target2 = target2 + np.array([0.01,0,0], ndmin=2).T
-        target3 = currentpos2 + np.array([0.01,0,0], ndmin=2).T
-        target4 = currentpos1 + np.array([0.01,0,0], ndmin=2).T
+    # if data.time>=2:
+    #     movement = 1
+    #     target1 = target1 + np.array([0.01,0,0], ndmin=2).T
+    #     target2 = target2 + np.array([0.01,0,0], ndmin=2).T
+    #     target3 = currentpos2 + np.array([-2,0,0], ndmin=2).T
+    #     target4 = currentpos1 + np.array([-2,0,0], ndmin=2).T
     
     # get framebuffer viewport
     viewport_width, viewport_height = glfw.get_framebuffer_size(
