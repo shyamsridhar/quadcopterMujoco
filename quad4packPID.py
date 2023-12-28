@@ -39,10 +39,12 @@ lastx = 0
 lasty = 0
 
 #target for quad1
-target1 = np.array([1, 1, 5], ndmin=2).T
-target2 = np.array([1, -1, 5], ndmin=2).T
-target3 = np.array([-1, -1, 5], ndmin=2).T
-target4 = np.array([-1, 1, 5], ndmin=2).T
+target1 = np.array([0.8, 0.8, 5], ndmin=2).T
+target2 = np.array([0.8, -0.8, 5], ndmin=2).T
+target3 = np.array([-0.8, -0.8, 5], ndmin=2).T
+target4 = np.array([-0.8, 0.8, 5], ndmin=2).T
+
+tol = np.array([3*0.1, 3*0.1, 3*0.1], ndmin=2).T
 
 # kthr = 0.00005
 # ktrq = kthr/5
@@ -336,10 +338,10 @@ while not glfw.window_should_close(window):
     
 
     #saturation limit to 60 degrees
-    dpr1body[0] = max(min(np.pi/4, dpr1body[0]), -np.pi/4); dpr1body[1] = max(min(np.pi/4, dpr1body[1]), -np.pi/4)
-    dpr2body[0] = max(min(np.pi/4, dpr2body[0]), -np.pi/4); dpr2body[1] = max(min(np.pi/4, dpr2body[1]), -np.pi/4)
-    dpr3body[0] = max(min(np.pi/4, dpr3body[0]), -np.pi/4); dpr3body[1] = max(min(np.pi/4, dpr3body[1]), -np.pi/4)
-    dpr4body[0] = max(min(np.pi/4, dpr4body[0]), -np.pi/4); dpr4body[1] = max(min(np.pi/4, dpr4body[1]), -np.pi/4)
+    dpr1body[0] = max(min(np.pi/3, dpr1body[0]), -np.pi/3); dpr1body[1] = max(min(np.pi/3, dpr1body[1]), -np.pi/3)
+    dpr2body[0] = max(min(np.pi/3, dpr2body[0]), -np.pi/3); dpr2body[1] = max(min(np.pi/3, dpr2body[1]), -np.pi/3)
+    dpr3body[0] = max(min(np.pi/3, dpr3body[0]), -np.pi/3); dpr3body[1] = max(min(np.pi/3, dpr3body[1]), -np.pi/3)
+    dpr4body[0] = max(min(np.pi/3, dpr4body[0]), -np.pi/3); dpr4body[1] = max(min(np.pi/3, dpr4body[1]), -np.pi/3)
 
 
     dpr1error = dpr1body-currentpr1
@@ -376,7 +378,7 @@ while not glfw.window_should_close(window):
     pf4 = prf4[0]
     yf4 = 5*(0-yaw4) + 3*(0-yawrate4)
 
-    print(currentpos1[0], currentpos1[1], currentpos1[2], currentpos3[0], currentpos3[1], currentpos3[2])
+    print(currentpos1[0], currentpos1[1], currentpos1[2])
     #quad1
     data.ctrl[0] = zf[0]-rf[0]-pf[0]-yf
     data.ctrl[1] = zf[0]+rf[0]+pf[0]-yf
@@ -408,12 +410,13 @@ while not glfw.window_should_close(window):
     if (data.time>=simend):
         break
       
-    # if data.time>=2:
-    #     movement = 1
-    #     target1 = target1 + np.array([0.01,0,0], ndmin=2).T
-    #     target2 = target2 + np.array([0.01,0,0], ndmin=2).T
-    #     target3 = currentpos2 + np.array([-2,0,0], ndmin=2).T
-    #     target4 = currentpos1 + np.array([-2,0,0], ndmin=2).T
+
+    if np.all(abs(target1 - currentpos1) <= tol) and data.time>=10:
+        print("setting new target")
+        target1 = target1 + np.array([0.1,0,0], ndmin=2).T
+        target2 = target2 + np.array([0.1,0,0], ndmin=2).T
+        target3 = target3 + np.array([0.1,0,0], ndmin=2).T
+        target4 = target4 + np.array([0.1,0,0], ndmin=2).T
     
     # get framebuffer viewport
     viewport_width, viewport_height = glfw.get_framebuffer_size(
