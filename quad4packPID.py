@@ -25,6 +25,7 @@ from mujoco.glfw import glfw
 import numpy as np
 import os
 from matplotlib import pyplot
+import ahrs
 
 xml_path = 'quad1pack.xml'
 simend = 30
@@ -39,10 +40,7 @@ lastx = 0
 lasty = 0
 
 #target for quad1
-target1 = np.array([0.8, 0.8, 5], ndmin=2).T
-target2 = np.array([0.8, -0.8, 5], ndmin=2).T
-target3 = np.array([-0.8, -0.8, 5], ndmin=2).T
-target4 = np.array([-0.8, 0.8, 5], ndmin=2).T
+target1 = np.array([0.98, 0.98, 5], ndmin=2).T
 
 tol = np.array([3*0.1, 3*0.1, 3*0.1], ndmin=2).T
 
@@ -51,83 +49,49 @@ tol = np.array([3*0.1, 3*0.1, 3*0.1], ndmin=2).T
 kthr = 1.08E-05
 ktrq = 1.62E-07
 
-kp=0.2*50
-kd=6
-ki = 5
-kpr=20
-kdr=20
-movement = 0
-package = 1
+k_att = 10
+k_par = 10
+k_dar = 5
 
 
 
 #declaring body thrust and gyro torques as global
 th1, tq1 = np.zeros((3,4)), np.zeros((3,4))
-th2, tq2 = np.zeros((3,4)), np.zeros((3,4))
-th3, tq3 = np.zeros((3,4)), np.zeros((3,4))
-th4, tq4 = np.zeros((3,4)), np.zeros((3,4))
 
 def init_controller(model, data):
-    data.qpos[2] = 0.1; data.qpos[13] = 0.1; data.qpos[24] = 0.1; data.qpos[35] = 0.1
+    data.qpos[2] = 0.1
     data.qvel[:] = 0
     pass
 
 def controller(model, data):
-    res = np.zeros((9,1)); res2 = np.zeros((9,1)); res3 = np.zeros((9,1)); res4 = np.zeros((9,1))
-    mj.mju_quat2Mat(res,data.qpos[3:7]); mj.mju_quat2Mat(res2,data.qpos[14:18]); mj.mju_quat2Mat(res3,data.qpos[25:29]); mj.mju_quat2Mat(res4,data.qpos[36:40])
+    res = np.zeros((9,1))
+    mj.mju_quat2Mat(res,data.qpos[3:7])
 
-    R = res.reshape((3,3)); R2 = res2.reshape((3,3)); R3 = res3.reshape((3,3)); R4 = res4.reshape((3,3))
+    R = res.reshape((3,3))
 
-    propvel = data.qvel[6:10]; propvel2 = data.qvel[16:20]; propvel3 = data.qvel[26:30]; propvel4 = data.qvel[36:40]
+    propvel = data.qvel[6:10]
 
-    propvel[0] = max(min(2000, propvel[0]), 0); propvel2[0] = max(min(2000, propvel2[0]), 0); propvel3[0] = max(min(2000, propvel3[0]), 0); propvel4[0] = max(min(2000, propvel4[0]), 0)
-    propvel[1] = max(min(2000, propvel[1]), 0); propvel2[1] = max(min(2000, propvel2[1]), 0); propvel3[1] = max(min(2000, propvel3[1]), 0); propvel4[1] = max(min(2000, propvel4[1]), 0)
-    propvel[2] = max(min(0, propvel[2]), -2000); propvel2[2] = max(min(0, propvel2[2]), -2000); propvel3[2] = max(min(0, propvel3[2]), -2000); propvel4[2] = max(min(0, propvel4[2]), -2000)
-    propvel[3] = max(min(0, propvel[3]), -2000); propvel2[3] = max(min(0, propvel2[3]), -2000); propvel3[3] = max(min(0, propvel3[3]), -2000); propvel4[3] = max(min(0, propvel4[3]), -2000)
+    thrust = kthr*propvel**2 
+    torque = ktrq*propvel**2 
 
-    thrust = kthr*propvel**2; thrust2 = kthr*propvel2**2; thrust3 = kthr*propvel3**2; thrust4 = kthr*propvel4**2
-    torque = ktrq*propvel**2; torque2 = ktrq*propvel2**2; torque3 = ktrq*propvel3**2; torque4 = ktrq*propvel4**2
+    print(propvel)
 
-    # print(propvel)
+    global th1, tq1 
+    th1, tq1 = np.zeros((3,4)), np.zeros((3,4))
 
-    global th1, th2, th3, th4, tq1, tq2, tq3, tq4
-    th1, th2, th3, th4, tq1, tq2, tq3, tq4 = np.zeros((3,4)), np.zeros((3,4)), np.zeros((3,4)), np.zeros((3,4)), np.zeros((3,4)), np.zeros((3,4)), np.zeros((3,4)), np.zeros((3,4))
-
-    th1[2,:], th2[2,:], th3[2,:], th4[2,:] = thrust, thrust2, thrust3, thrust4
-    tq1[2,:], tq2[2,:], tq3[2,:], tq4[2,:] = torque, torque2, torque3, torque4
+    th1[2,:] = thrust
+    tq1[2,:] = torque
 
  
     #thrust and torques in global coordinate frame
     th1a = np.matmul(R,th1)
-    th2a = np.matmul(R2,th2)
-    th3a = np.matmul(R3,th3)
-    th4a = np.matmul(R4,th4)
     tq1a = np.matmul(R,tq1)
-    tq2a = np.matmul(R2,tq2)
-    tq3a = np.matmul(R3,tq3)
-    tq4a = np.matmul(R4,tq4)
 
     #xfrc. Find XFRC position based on body id of propellers
     data.xfrc_applied[11][:] = np.concatenate((th1a[:,0],-tq1a[:,0]),axis=0).flatten()
     data.xfrc_applied[13][:] = np.concatenate((th1a[:,1],-tq1a[:,1]),axis=0).flatten()
     data.xfrc_applied[15][:] = np.concatenate((th1a[:,2],tq1a[:,2]),axis=0).flatten()
     data.xfrc_applied[17][:] = np.concatenate((th1a[:,3],tq1a[:,3]),axis=0).flatten()
-
-    data.xfrc_applied[24][:] = np.concatenate((th2a[:,0],-tq2a[:,0]),axis=0).flatten()
-    data.xfrc_applied[26][:] = np.concatenate((th2a[:,1],-tq2a[:,1]),axis=0).flatten()
-    data.xfrc_applied[28][:] = np.concatenate((th2a[:,2],tq2a[:,2]),axis=0).flatten()
-    data.xfrc_applied[30][:] = np.concatenate((th2a[:,3],tq2a[:,3]),axis=0).flatten()
-
-    data.xfrc_applied[37][:] = np.concatenate((th3a[:,0],-tq3a[:,0]),axis=0).flatten()
-    data.xfrc_applied[39][:] = np.concatenate((th3a[:,1],-tq3a[:,1]),axis=0).flatten()
-    data.xfrc_applied[41][:] = np.concatenate((th3a[:,2],tq3a[:,2]),axis=0).flatten()
-    data.xfrc_applied[43][:] = np.concatenate((th3a[:,3],tq3a[:,3]),axis=0).flatten()
-
-    data.xfrc_applied[50][:] = np.concatenate((th4a[:,0],-tq4a[:,0]),axis=0).flatten()
-    data.xfrc_applied[52][:] = np.concatenate((th4a[:,1],-tq4a[:,1]),axis=0).flatten()
-    data.xfrc_applied[54][:] = np.concatenate((th4a[:,2],tq4a[:,2]),axis=0).flatten()
-    data.xfrc_applied[56][:] = np.concatenate((th4a[:,3],tq4a[:,3]),axis=0).flatten()
-
 
 
 def keyboard(window, key, scancode, act, mods):
@@ -241,20 +205,69 @@ init_controller(model,data)
 #set the controller
 mj.set_mjcb_control(controller)
 
-error = np.array([0, 0, 0], ndmin=2).T; error2 = np.array([0, 0, 0], ndmin=2).T
-error3 = np.array([0, 0, 0], ndmin=2).T; error4 = np.array([0, 0, 0], ndmin=2).T
+error = np.array([0, 0, 0], ndmin=2).T
 
 while not glfw.window_should_close(window):
-    res = np.zeros((9,1)); res2 = np.zeros((9,1)); res3 = np.zeros((9,1)); res4 = np.zeros((9,1))
 
-    mj.mju_quat2Mat(res,data.qpos[3:7]); mj.mju_quat2Mat(res2,data.qpos[14:18]); mj.mju_quat2Mat(res3,data.qpos[25:29]); mj.mju_quat2Mat(res4,data.qpos[36:40])
-    R = res.reshape((3,3)); R2 = res2.reshape((3,3)); R3 = res3.reshape((3,3)); R4 = res4.reshape((3,3))
+    currentpos1 = np.array(data.qpos[0:3], ndmin=2).T
+    currentvel1 = np.array(data.sensordata[0:3], ndmin=2).T
+    currentaccel1 = np.array(data.sensordata[3:6], ndmin=2).T
 
-    roll = np.arctan2(R[2][1],R[2][2]); roll2 = np.arctan2(R2[2][1],R2[2][2]); roll3 = np.arctan2(R3[2][1],R3[2][2]); roll4 = np.arctan2(R4[2][1],R4[2][2])
-    pitch = np.arcsin(-R[2][0]); pitch2 = np.arcsin(-R2[2][0]); pitch3 = np.arcsin(-R3[2][0]); pitch4 = np.arcsin(-R4[2][0])
-    yaw = np.arctan2(R[1][0],R[0][0]); yaw2 = np.arctan2(R2[1][0],R2[0][0]); yaw3 = np.arctan2(R3[1][0],R3[0][0]); yaw4 = np.arctan2(R4[1][0],R4[0][0])
+    
+    #Position controller P-PID controle
+    velocity_sp = (target1 - currentpos1)*10 
+    acceleration_sp = (velocity_sp-currentvel1)*10 - (currentaccel1)*5 # need to add integral controller
 
-    #drone1
+
+    #finding quaternion setpoint from acceleration set point using reduced attitude control
+
+    des_thrust_dir = acceleration_sp/np.linalg.norm(acceleration_sp)
+    des_thrust = np.linalg.norm(acceleration_sp)
+
+    #obtaining desired roll pitch and yaw angles from des_trhust_dir
+    #rotation about y axis causes pitch and x axis causes roll
+    des_yaw = 0
+    des_pitch = np.arctan(des_thrust_dir[0],des_thrust_dir[2])
+
+    #rotate des_thrust_dir in pitch direction
+
+    R_pitch = np.array([[np.cos(des_pitch[0]), 0, -np.sin(des_pitch[0])],[0, 1, 0],[np.sin(des_pitch[0]), 0, np.cos(des_pitch[0])]])
+    new_direction = np.matmul(R_pitch,des_thrust_dir)
+
+    des_roll = np.arctan2(-new_direction[1],new_direction[2])
+    euler = np.array([des_roll[0], des_pitch[0], des_yaw], ndmin=2)
+    
+    des_att_quat = np.array([np.cos(0.5*des_roll[0])*np.cos(0.5*des_pitch[0])*np.cos(0.5*des_yaw) + np.sin(0.5*des_roll[0])*np.sin(0.5*des_pitch[0])*np.sin(0.5*des_yaw)
+                             ,np.sin(0.5*des_roll[0])*np.cos(0.5*des_pitch[0])*np.cos(0.5*des_yaw) - np.cos(0.5*des_roll[0])*np.sin(0.5*des_pitch[0])*np.sin(0.5*des_yaw)
+                             ,np.cos(0.5*des_roll[0])*np.sin(0.5*des_pitch[0])*np.cos(0.5*des_yaw) + np.sin(0.5*des_roll[0])*np.cos(0.5*des_pitch[0])*np.sin(0.5*des_yaw)
+                             ,np.cos(0.5*des_roll[0])*np.cos(0.5*des_pitch[0])*np.sin(0.5*des_yaw) - np.sin(0.5*des_roll[0])*np.sin(0.5*des_pitch[0])*np.cos(0.5*des_yaw)])
+
+    cur_att_quat = np.array(data.qpos[3:7])
+
+    #attitude controller
+    cur_quat = ahrs.Quaternion(cur_att_quat)
+    des_quat = ahrs.Quaternion(des_att_quat)
+    cur_quat_inv = ahrs.Quaternion(cur_quat.inverse)
+
+    error_att_quat = cur_quat_inv.product(des_quat)
+
+    if error_att_quat[0] < 0:
+        des_ang = error_att_quat[1:4] * -1 * k_att
+    else:
+        des_ang = error_att_quat[1:4] * k_att
+
+
+    #attitude rate controller
+    res = np.zeros((9,1))
+    mj.mju_quat2Mat(res,data.qpos[3:7])
+    R = res.reshape((3,3))
+    roll = np.arctan2(R[2][1],R[2][2])
+    pitch = np.arcsin(-R[2][0])
+    yaw = np.arctan2(R[1][0],R[0][0])
+
+    currentpr1 = np.array([pitch, roll, yaw], ndmin=2).T
+
+
     absangvel = data.qvel[3:6].reshape((3,1))
     bdyangvel = np.matmul(R.T,absangvel)
     Tmatinv = np.array([[1,np.sin(roll)*np.tan(pitch),np.cos(roll)*np.tan(pitch)],[0,np.cos(roll),-np.sin(roll)],[0,np.sin(roll)/np.cos(pitch),np.cos(roll)/np.cos(pitch)]])
@@ -262,146 +275,22 @@ while not glfw.window_should_close(window):
     rollrate, pitchrate, yawrate = rpyrates.flatten()
 
     bodyangvel1 = np.array([pitchrate, rollrate, yawrate], ndmin=2).T
-    # bodyangvel1 = np.array([data.qvel[4], data.qvel[3], data.qvel[5]], ndmin=2).T
-    
-
-    #drone2
-    absangvel2 = data.qvel[13:16].reshape((3,1))
-    bdyangvel2 = np.matmul(R2.T,absangvel2)
-    Tmatinv2 = np.array([[1,np.sin(roll2)*np.tan(pitch2),np.cos(roll2)*np.tan(pitch2)],[0,np.cos(roll2),-np.sin(roll2)],[0,np.sin(roll2)/np.cos(pitch2),np.cos(roll2)/np.cos(pitch2)]])
-    rpyrates2 = np.matmul(Tmatinv2,bdyangvel2)
-    rollrate2, pitchrate2, yawrate2 = rpyrates2.flatten()
-
-    bodyangvel21 = np.array([pitchrate2, rollrate2, yawrate2], ndmin=2).T      
-
-    #drone3
-    absangvel3 = data.qvel[23:26].reshape((3,1))
-    bdyangvel3 = np.matmul(R3.T,absangvel3)
-    Tmatinv3 = np.array([[1,np.sin(roll3)*np.tan(pitch3),np.cos(roll3)*np.tan(pitch3)],[0,np.cos(roll3),-np.sin(roll3)],[0,np.sin(roll3)/np.cos(pitch3),np.cos(roll3)/np.cos(pitch3)]])
-    rpyrates3 = np.matmul(Tmatinv3,bdyangvel3)
-    rollrate3, pitchrate3, yawrate3 = rpyrates3.flatten()
-
-    bodyangvel31 = np.array([pitchrate3, rollrate3, yawrate3], ndmin=2).T
-
-    #drone4
-    absangvel4 = data.qvel[33:36].reshape((3,1))
-    bdyangvel4 = np.matmul(R4.T,absangvel4)
-    Tmatinv4 = np.array([[1,np.sin(roll4)*np.tan(pitch4),np.cos(roll4)*np.tan(pitch4)],[0,np.cos(roll4),-np.sin(roll4)],[0,np.sin(roll4)/np.cos(pitch4),np.cos(roll4)/np.cos(pitch4)]])
-    rpyrates4 = np.matmul(Tmatinv4,bdyangvel4)
-    rollrate4, pitchrate4, yawrate4 = rpyrates4.flatten()
-
-    bodyangvel41 = np.array([pitchrate4, rollrate4, yawrate4], ndmin=2).T
-
-    t = data.time
-
-    ##based on quadcopter matlab
-    # currentpos1 = np.array(data.sensordata[24:27], ndmin=2).T; currentpos2 = np.array(data.sensordata[27:30], ndmin=2).T; currentpos3 = np.array(data.sensordata[30:33], ndmin=2).T; currentpos4 = np.array(data.sensordata[33:36], ndmin=2).T
-    currentpos1 = np.array(data.qpos[0:3], ndmin=2).T; currentpos2 = np.array(data.qpos[11:14], ndmin=2).T; currentpos3 = np.array(data.qpos[22:25], ndmin=2).T; currentpos4 = np.array(data.qpos[33:36], ndmin=2).T
-    currentvel1 = np.array(data.sensordata[0:3], ndmin=2).T; currentvel2 = np.array(data.sensordata[3:6], ndmin=2).T; currentvel3 = np.array(data.sensordata[6:9], ndmin=2).T; currentvel4 = np.array(data.sensordata[9:12], ndmin=2).T
-    currentpr1 = np.array([pitch, roll, yaw], ndmin=2).T; currentpr2 = np.array([pitch2, roll2, yaw2], ndmin=2).T; currentpr3 = np.array([pitch3, roll3, yaw3], ndmin=2).T; currentpr4 = np.array([pitch4, roll4, yaw4], ndmin=2).T
-    # currentrp1vel = np.array(data.sensordata[0:3], ndmin=2); currentrp2vel = np.array(data.sensordata[3:6], ndmin=2); currentrp3vel = np.array(data.sensordata[6:9], ndmin=2); currentrp4vel = np.array(data.sensordata[9:12], ndmin=2)
-
-    #integral error
-    if data.time > 2:
-        error = error + (target1-currentpos1)*(data.time-t_1)
-        error2 = error2 + (target2-currentpos2)*(data.time-t_1)
-        error3 = error3 + (target3-currentpos3)*(data.time-t_1)
-        error4 = error4 + (target4-currentpos4)*(data.time-t_1)
-        t_1 = data.time
-    else:
-        t_1 = data.time
-
-    dpr1 = 10*(target1-currentpos1) + 6*(0-currentvel1) + 2*error
-    dpr2 = 10*(target2-currentpos2) + 6*(0-currentvel2) + 2*error2
-    dpr3 = 10*(target3-currentpos3) + 6*(0-currentvel3) + 2*error3
-    dpr4 = 10*(target4-currentpos4) + 6*(0-currentvel4) + 2*error4
-    
-    # dpr1body = (target1-currentpos1)*0.1 + 0.05*(0-currentvel1) + 12*package*(target1-currentpos1) + 4*package*(0-currentvel1)
-    # dpr2body = (target2-currentpos2)*0.1 + 0.05*(0-currentvel2) + 12*package*(target2-currentpos2) + 4*package*(0-currentvel2)
-    # dpr3body = (target3-currentpos3)*0.1 + 0.05*(0-currentvel3) + 12*package*(target3-currentpos3) + 4*package*(0-currentvel3)
-    # dpr4body = (target4-currentpos4)*0.1 + 0.05*(0-currentvel4) + 12*package*(target2-currentpos2) + 4*package*(0-currentvel2)
-
-    dpr1body = (target1-currentpos1)*0.1*50 + 0.05*50*(0-currentvel1)
-    dpr2body = (target2-currentpos2)*0.1*50 + 0.05*50*(0-currentvel2)
-    dpr3body = (target3-currentpos3)*0.1*50 + 0.05*50*(0-currentvel3)
-    dpr4body = (target4-currentpos4)*0.1*50 + 0.05*50*(0-currentvel4)
-
-    # dpr1body = (target1-currentpos1)*0.1 + 0.05*(0-currentvel1)
-    # dpr2body = (target2-currentpos2)*0.1 + 0.05*(0-currentvel2)
-    # dpr3body = (target3-currentpos3)*0.1 + 0.05*(0-currentvel3)
-    # dpr4body = (target4-currentpos4)*0.1 + 0.05*(0-currentvel4)
-    
-    dpr1body[1] = dpr1body[1]*(-1)
-    dpr2body[1] = dpr2body[1]*(-1)
-    dpr3body[1] = dpr3body[1]*(-1)
-    dpr4body[1] = dpr4body[1]*(-1)
-    
-
-    #saturation limit to 60 degrees
-    dpr1body[0] = max(min(np.pi/3, dpr1body[0]), -np.pi/3); dpr1body[1] = max(min(np.pi/3, dpr1body[1]), -np.pi/3)
-    dpr2body[0] = max(min(np.pi/3, dpr2body[0]), -np.pi/3); dpr2body[1] = max(min(np.pi/3, dpr2body[1]), -np.pi/3)
-    dpr3body[0] = max(min(np.pi/3, dpr3body[0]), -np.pi/3); dpr3body[1] = max(min(np.pi/3, dpr3body[1]), -np.pi/3)
-    dpr4body[0] = max(min(np.pi/3, dpr4body[0]), -np.pi/3); dpr4body[1] = max(min(np.pi/3, dpr4body[1]), -np.pi/3)
 
 
-    dpr1error = dpr1body-currentpr1
-    dpr2error = dpr2body-currentpr2
-    dpr3error = dpr3body-currentpr3
-    dpr4error = dpr4body-currentpr4
+    des_ang_rate = (des_ang-currentpr1)*k_par - bodyangvel1*k_dar
 
-    if data.time > 1:
-        breakpoint
+    zf = des_thrust
+    rf = des_ang_rate[1]
+    pf = des_ang_rate[0]
+    yf = des_ang_rate[2]
 
-
-    prf1 = 5*2*dpr1error + 2*(0-bodyangvel1)
-    prf2 = 5*2*dpr2error + 2*(0-bodyangvel21)
-    prf3 = 5*2*dpr3error + 2*(0-bodyangvel31)
-    prf4 = 5*2*dpr4error + 2*(0-bodyangvel41)
-
-    zf = 50 + dpr1[2] 
-    rf = prf1[1]
-    pf = prf1[0]
-    yf = 5*(0-yaw) + 3*(0-yawrate)
-
-    zf2 = 50 + dpr2[2]
-    rf2 = prf2[1]
-    pf2 = prf2[0]
-    yf2 = 5*(0-yaw2) + 3*(0-yawrate2)
-
-    zf3 = 50 + dpr3[2]
-    rf3 = prf3[1]
-    pf3 = prf3[0]
-    yf3 = 5*(0-yaw3) + 3*(0-yawrate3)
-
-    zf4 = 50 + dpr4[2]
-    rf4 = prf4[1]
-    pf4 = prf4[0]
-    yf4 = 5*(0-yaw4) + 3*(0-yawrate4)
-
-    print(currentpos1[0], currentpos1[1], currentpos1[2])
+    # print(currentpos1[0], currentpos1[1], currentpos1[2])
     #quad1
-    data.ctrl[0] = zf[0]-rf[0]-pf[0]-yf
-    data.ctrl[1] = zf[0]+rf[0]+pf[0]-yf
-    data.ctrl[2] = zf[0]+rf[0]-pf[0]+yf
-    data.ctrl[3] = zf[0]-rf[0]+pf[0]+yf
+    data.ctrl[0] = zf-rf[0]-pf[0]-yf[0]
+    data.ctrl[1] = zf+rf[0]+pf[0]-yf[0]
+    data.ctrl[2] = zf+rf[0]-pf[0]+yf[0]
+    data.ctrl[3] = zf-rf[0]+pf[0]+yf[0]
 
-    #quad2
-    data.ctrl[4] = zf2[0]-rf2[0]-pf2[0]-yf2
-    data.ctrl[5] = zf2[0]+rf2[0]+pf2[0]-yf2
-    data.ctrl[6] = zf2[0]+rf2[0]-pf2[0]+yf2
-    data.ctrl[7] = zf2[0]-rf2[0]+pf2[0]+yf2
-
-    #quad3
-    data.ctrl[8] = zf3[0]-rf3[0]-pf3[0]-yf3
-    data.ctrl[9] = zf3[0]+rf3[0]+pf3[0]-yf3
-    data.ctrl[10] = zf3[0]+rf3[0]-pf3[0]+yf3
-    data.ctrl[11] = zf3[0]-rf3[0]+pf3[0]+yf3
-
-    #quad4
-    data.ctrl[12] = zf4[0]-rf4[0]-pf4[0]-yf4
-    data.ctrl[13] = zf4[0]+rf4[0]+pf4[0]-yf4
-    data.ctrl[14] = zf4[0]+rf4[0]-pf4[0]+yf4
-    data.ctrl[15] = zf4[0]-rf4[0]+pf4[0]+yf4
 
     for _ in range(2):
       mj.mj_step(model, data)
@@ -411,13 +300,6 @@ while not glfw.window_should_close(window):
         break
       
 
-    if np.all(abs(target1 - currentpos1) <= tol) and data.time>=10:
-        print("setting new target")
-        target1 = target1 + np.array([0.1,0,0], ndmin=2).T
-        target2 = target2 + np.array([0.1,0,0], ndmin=2).T
-        target3 = target3 + np.array([0.1,0,0], ndmin=2).T
-        target4 = target4 + np.array([0.1,0,0], ndmin=2).T
-    
     # get framebuffer viewport
     viewport_width, viewport_height = glfw.get_framebuffer_size(
         window)

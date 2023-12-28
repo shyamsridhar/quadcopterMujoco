@@ -97,7 +97,7 @@
             <inertial pos="0 0 0" mass="1.5" fullinertia="0.00011 0.00011 0.00002 0.000000011 0.00000002 0.000000011" /> 
         </body>
 
-        <body name="quad2" pos="0.989 -0.989 0.1" euler='0 0 0'>
+        <!-- <body name="quad2" pos="0.989 -0.989 0.1" euler='0 0 0'>
             <freejoint name="root2"/>
             <geom  type="box" group="0"  size="0.05513 0.05513 0.0185" rgba="0.23 0.23 0.23 1"/>
             <site name="com2" group="0" pos="0 0 0"/>
@@ -162,9 +162,9 @@
                 <inertial pos="0 0 0" mass="0" diaginertia="0 0 0" /> 
             </body>
             <inertial pos="0 0 0" mass="1.5" fullinertia="0.00011 0.00011 0.00002 0.000000011 0.00000002 0.000000011" /> 
-        </body>
+        </body> -->
 
-       <body name="quad3" pos="-0.989 -0.989 0.1" euler='0 0 0'>
+       <!-- <body name="quad3" pos="-0.989 -0.989 0.1" euler='0 0 0'>
             <freejoint name="root3"/>
             <geom  type="box" group="0"  size="0.05513 0.05513 0.0185" rgba="0.23 0.23 0.23 1"/>
             <site name="com3" group="0" pos="0 0 0"/>
@@ -229,9 +229,9 @@
                 <inertial pos="0 0 0" mass="0" diaginertia="0 0 0" /> 
             </body>
             <inertial pos="0 0 0" mass="1.5" fullinertia="0.00011 0.00011 0.00002 0.000000011 0.00000002 0.000000011" /> 
-        </body>
+        </body> -->
 
-        <body name="quad4" pos="-0.989 0.989 0.1" euler='0 0 0'>
+        <!-- <body name="quad4" pos="-0.989 0.989 0.1" euler='0 0 0'>
             <freejoint name="root4"/>
             <geom  type="box" group="0"  size="0.05513 0.05513 0.0185" rgba="0.23 0.23 0.23 1"/>
             <site name="com4" group="0" pos="0 0 0"/>
@@ -296,8 +296,8 @@
                 <inertial pos="0 0 0" mass="0" diaginertia="0 0 0" /> 
             </body>
             <inertial pos="0 0 0" mass="1.5" fullinertia="0.00011 0.00011 0.00002 0.000000011 0.00000002 0.000000011" /> 
-        </body>
-
+        </body> -->
+<!-- 
         <body name="package" pos = "0 0 0.05" euler="0 0 0">
             <freejoint name="root"/>
             <geom type="box" group="0" size="0.05 0.05 0.05" rgba="0.8 0.5 0.23 1" />
@@ -334,24 +334,25 @@
                 </composite>
                 <inertial pos="0 0 0" mass="0.000001" diaginertia="0.000000001 0.000000001 0.000000001" />
             </body>
-        </body>
+        </body> -->
 
     </worldbody>
 	
     <equality>
-        <weld name="quad1connect" body1="B_last" body2="quad1" anchor="0 0 -0.0235" solref="-10000 -1000"/>
+        <!-- <weld name="quad1connect" body1="B_last" body2="quad1" anchor="0 0 -0.0235" solref="-10000 -1000"/>
         <weld name="quad3connect" body1="CB_last" body2="quad2" anchor="0 0 -0.0235" solref="-10000 -1000"/>
         <weld name="quad2connect" body1="DB_last" body2="quad3" anchor="0 0 -0.0235" solref="-10000 -1000"/>
-        <weld name="quad4connect" body1="EB_last" body2="quad4" anchor="0 0 -0.0235" solref="-10000 -1000"/>        
+        <weld name="quad4connect" body1="EB_last" body2="quad4" anchor="0 0 -0.0235" solref="-10000 -1000"/>         -->
     </equality>
 
 
     <sensor>
 
         <framelinvel name="vel1" objtype="site" objname="com"/>
-        <framelinvel name="vel2" objtype="site" objname="com2"/>
+        <framelinacc name="acc1" objtype="site" objname="com"/>
+        <!-- <framelinvel name="vel2" objtype="site" objname="com2"/>
         <framelinvel name="vel3" objtype="site" objname="com3"/>
-        <framelinvel name="vel4" objtype="site" objname="com4"/>
+        <framelinvel name="vel4" objtype="site" objname="com4"/> -->
 
 	</sensor>
 	
@@ -360,7 +361,7 @@
 		<motor name="m2" ctrllimited="true" ctrlrange="0 100" gear="0.0011" joint="motor2"/>
 		<motor name="m3" ctrllimited="true" ctrlrange="0 100" gear="-0.0011" joint="motor3"/>
 		<motor name="m4" ctrllimited="true" ctrlrange="0 100" gear="-0.0011" joint="motor4"/>
-
+<!-- 
         <motor name="m21" ctrllimited="true" ctrlrange="0 100" gear="0.0011" joint="motor21"/>
 		<motor name="m22" ctrllimited="true" ctrlrange="0 100" gear="0.0011" joint="motor22"/>
 		<motor name="m23" ctrllimited="true" ctrlrange="0 100" gear="-0.0011" joint="motor23"/>
@@ -374,6 +375,6 @@
         <motor name="m41" ctrllimited="true" ctrlrange="0 100" gear="0.0011" joint="motor41"/>
 		<motor name="m42" ctrllimited="true" ctrlrange="0 100" gear="0.0011" joint="motor42"/>
 		<motor name="m43" ctrllimited="true" ctrlrange="0 100" gear="-0.0011" joint="motor43"/>
-		<motor name="m44" ctrllimited="true" ctrlrange="0 100" gear="-0.0011" joint="motor44"/>
+		<motor name="m44" ctrllimited="true" ctrlrange="0 100" gear="-0.0011" joint="motor44"/> -->
     </actuator>
 </mujoco>
