@@ -42,16 +42,16 @@ lasty = 0
 #target for quad1
 target1 = np.array([0.98, 0.98, 5], ndmin=2).T
 
-tol = np.array([3*0.1, 3*0.1, 3*0.1], ndmin=2).T
+# tol = np.array([3*0.1, 3*0.1, 3*0.1], ndmin=2).T
 
 # kthr = 0.00005
 # ktrq = kthr/5
 kthr = 1.08E-05
 ktrq = 1.62E-07
 
-k_att = 10
-k_par = 10
-k_dar = 5
+k_att = 5
+k_par = 1
+k_dar = 0.5
 
 
 
@@ -74,7 +74,7 @@ def controller(model, data):
     thrust = kthr*propvel**2 
     torque = ktrq*propvel**2 
 
-    print(propvel)
+    # print(propvel)
 
     global th1, tq1 
     th1, tq1 = np.zeros((3,4)), np.zeros((3,4))
@@ -215,14 +215,21 @@ while not glfw.window_should_close(window):
 
     
     #Position controller P-PID controle
-    velocity_sp = (target1 - currentpos1)*10 
-    acceleration_sp = (velocity_sp-currentvel1)*10 - (currentaccel1)*5 # need to add integral controller
+    velocity_sp = (target1 - currentpos1)*5 
+    acceleration_sp = (velocity_sp-currentvel1)*5 - (currentaccel1)*1 # need to add integral controller
 
 
     #finding quaternion setpoint from acceleration set point using reduced attitude control
 
     des_thrust_dir = acceleration_sp/np.linalg.norm(acceleration_sp)
     des_thrust = np.linalg.norm(acceleration_sp)
+
+    if des_thrust_dir[2] < 0:
+        des_thrust = des_thrust*-1
+ 
+    #limiting maximum tilt angle
+    
+
 
     #obtaining desired roll pitch and yaw angles from des_trhust_dir
     #rotation about y axis causes pitch and x axis causes roll
@@ -279,12 +286,12 @@ while not glfw.window_should_close(window):
 
     des_ang_rate = (des_ang-currentpr1)*k_par - bodyangvel1*k_dar
 
-    zf = des_thrust
+    zf = 50 + des_thrust
     rf = des_ang_rate[1]
     pf = des_ang_rate[0]
     yf = des_ang_rate[2]
 
-    # print(currentpos1[0], currentpos1[1], currentpos1[2])
+    print(currentpos1[0], currentpos1[1], currentpos1[2])
     #quad1
     data.ctrl[0] = zf-rf[0]-pf[0]-yf[0]
     data.ctrl[1] = zf+rf[0]+pf[0]-yf[0]
