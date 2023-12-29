@@ -259,9 +259,9 @@ while not glfw.window_should_close(window):
     error_att_quat = cur_quat_inv.product(des_quat)
 
     if error_att_quat[0] < 0:
-        des_ang = error_att_quat[1:4] * -1 * k_att
+        des_ang = np.array(error_att_quat[1:4] * -1 * k_att, ndmin=2).T
     else:
-        des_ang = error_att_quat[1:4] * k_att
+        des_ang = np.array(error_att_quat[1:4] * k_att, ndmin=2).T
 
 
     #attitude rate controller
