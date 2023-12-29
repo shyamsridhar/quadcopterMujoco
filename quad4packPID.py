@@ -243,6 +243,8 @@ while not glfw.window_should_close(window):
 
     des_roll = np.arctan2(-new_direction[1],new_direction[2])
     euler = np.array([des_roll[0], des_pitch[0], des_yaw], ndmin=2)
+
+    #desired roll and pitch obtained above are measured with respect to zaxis
     
     des_att_quat = np.array([np.cos(0.5*des_roll[0])*np.cos(0.5*des_pitch[0])*np.cos(0.5*des_yaw) + np.sin(0.5*des_roll[0])*np.sin(0.5*des_pitch[0])*np.sin(0.5*des_yaw)
                              ,np.sin(0.5*des_roll[0])*np.cos(0.5*des_pitch[0])*np.cos(0.5*des_yaw) - np.cos(0.5*des_roll[0])*np.sin(0.5*des_pitch[0])*np.sin(0.5*des_yaw)
