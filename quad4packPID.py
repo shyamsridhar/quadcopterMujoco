@@ -39,10 +39,10 @@ lastx = 0
 lasty = 0
 
 #target for quad1
-target1 = np.array([0.8, 0.8, 5], ndmin=2).T
-target2 = np.array([0.8, -0.8, 5], ndmin=2).T
-target3 = np.array([-0.8, -0.8, 5], ndmin=2).T
-target4 = np.array([-0.8, 0.8, 5], ndmin=2).T
+target1 = np.array([3.5, 3.5, 10], ndmin=2).T
+target2 = np.array([3.5, -3.5, 10], ndmin=2).T
+target3 = np.array([-3.5, -3.5, 10], ndmin=2).T
+target4 = np.array([-3.5, 3.5, 10], ndmin=2).T
 
 tol = np.array([3*0.1, 3*0.1, 3*0.1], ndmin=2).T
 
@@ -294,7 +294,7 @@ while not glfw.window_should_close(window):
 
     t = data.time
 
-    ##based on quadcopter matlab
+    ##based on quadcopter
     # currentpos1 = np.array(data.sensordata[24:27], ndmin=2).T; currentpos2 = np.array(data.sensordata[27:30], ndmin=2).T; currentpos3 = np.array(data.sensordata[30:33], ndmin=2).T; currentpos4 = np.array(data.sensordata[33:36], ndmin=2).T
     currentpos1 = np.array(data.qpos[0:3], ndmin=2).T; currentpos2 = np.array(data.qpos[11:14], ndmin=2).T; currentpos3 = np.array(data.qpos[22:25], ndmin=2).T; currentpos4 = np.array(data.qpos[33:36], ndmin=2).T
     currentvel1 = np.array(data.sensordata[0:3], ndmin=2).T; currentvel2 = np.array(data.sensordata[3:6], ndmin=2).T; currentvel3 = np.array(data.sensordata[6:9], ndmin=2).T; currentvel4 = np.array(data.sensordata[9:12], ndmin=2).T
@@ -353,30 +353,30 @@ while not glfw.window_should_close(window):
         breakpoint
 
 
-    prf1 = 5*2*dpr1error + 2*(0-bodyangvel1)
-    prf2 = 5*2*dpr2error + 2*(0-bodyangvel21)
-    prf3 = 5*2*dpr3error + 2*(0-bodyangvel31)
-    prf4 = 5*2*dpr4error + 2*(0-bodyangvel41)
+    prf1 = 5*8**dpr1error + 2*10*(0-bodyangvel1)
+    prf2 = 5*8*dpr2error + 2*10*(0-bodyangvel21)
+    prf3 = 5*8*dpr3error + 2*10*(0-bodyangvel31)
+    prf4 = 5*8*dpr4error + 2*10*(0-bodyangvel41)
 
     zf = 50 + dpr1[2] 
     rf = prf1[1]
     pf = prf1[0]
-    yf = 5*(0-yaw) + 3*(0-yawrate)
+    yf = 5*4*(0-yaw) + 3*4*(0-yawrate)
 
     zf2 = 50 + dpr2[2]
     rf2 = prf2[1]
     pf2 = prf2[0]
-    yf2 = 5*(0-yaw2) + 3*(0-yawrate2)
+    yf2 = 5*4*(0-yaw2) + 3*4*(0-yawrate2)
 
     zf3 = 50 + dpr3[2]
     rf3 = prf3[1]
     pf3 = prf3[0]
-    yf3 = 5*(0-yaw3) + 3*(0-yawrate3)
+    yf3 = 5*4*(0-yaw3) + 3*4*(0-yawrate3)
 
     zf4 = 50 + dpr4[2]
     rf4 = prf4[1]
     pf4 = prf4[0]
-    yf4 = 5*(0-yaw4) + 3*(0-yawrate4)
+    yf4 = 5*4*(0-yaw4) + 3*4*(0-yawrate4)
 
     print(currentpos1[0], currentpos1[1], currentpos1[2])
     #quad1
