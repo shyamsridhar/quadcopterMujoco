@@ -94,6 +94,12 @@
                 </body>
                 <inertial pos="0 0 0" mass="0" diaginertia="0 0 0" /> 
             </body>
+            <!-- <body name="cable1" pos="0 0 -0.0185" euler="0 0 -135"> 
+                <composite type="cable" curve="s" count="100 1 1" offset= "0 0 0" size="5.7" initial="ball">
+                    <joint kind="main" damping=".015"/>
+                    <geom type="capsule" size=".0005" rgba=".8 .2 .1 1" condim="1"/>          
+                </composite>
+            </body>  -->
             <inertial pos="0 0 0" mass="1.5" fullinertia="0.00011 0.00011 0.00002 0.000000011 0.00000002 0.000000011" /> 
         </body>
 
@@ -301,15 +307,16 @@
         <body name="package" pos = "0 0 0.05" euler="0 0 0">
             <freejoint name="root"/>
             <geom type="box" group="0" size="0.05 0.05 0.05" rgba="0.8 0.5 0.23 1" />
-            <!-- <inertial pos="0 0 0" mass="0.01"/>
+            <inertial pos="0 0 0" mass="0.1" diaginertia="0.000000001 0.000000001 0.000000001"/>
+            <!-- <inertial pos="0 0 0" mass="0.01"/> -->
 
             <body name="cable1" pos="0 0 0.05" euler="0 0 45"> 
-                <composite type="cable" curve="s" count="100 1 1" offset= "0 0 0" size="5.7" initial="none">
+                <composite type="cable" curve="s" count="100 1 1" offset= "0 0 0" size="5.7" initial="ball">
                     <joint kind="main" damping=".015"/>
-                    <geom type="capsule" size=".005" rgba=".8 .2 .1 1" condim="1"/>          
+                    <geom type="capsule" size=".0005" rgba=".8 .2 .1 1" condim="1"/>          
                 </composite>
-                <inertial pos="0 0 0" mass="0.0000001" diaginertia="0.000000001 0.000000001 0.000000001" />
-            </body> -->
+                <!-- <inertial pos="0 0 0" mass="0.05" diaginertia="0.000000001 0.000000001 0.000000001" /> -->
+            </body> 
     
             <!-- <body name="cable2" pos="0 0 0.05" euler="0 0 -45"> 
                 <composite prefix="C" type="cable" curve="s" count="100 1 1" offset= "0 0 0" size="5.7" initial="none">
@@ -333,13 +340,14 @@
                     <geom type="capsule" size=".005" rgba=".8 .2 .1 1" condim="1"/>
                 </composite>
                 <inertial pos="0 0 0" mass="0.0000001" diaginertia="0.000000001 0.000000001 0.000000001" />
-            </body> -->
+            </body>-->
         </body>
 
     </worldbody>
 	
     <equality>
-        <!-- <weld name="quad1connect" body1="B_last" body2="quad1" anchor="0 0 -0.0235" solref="-10000 -1000"/> -->
+        <weld name="quad1connect" body1="B_last" body2="quad1" anchor="0 0 -0.0235" solref="-10000 -1000"/>
+        <!-- <weld name="quad1connect" body1="B_last" body2="package" anchor="0 0 0.1"/> -->
         <!-- <weld name="quad3connect" body1="CB_last" body2="quad2" anchor="0 0 -0.0235" solref="-10000 -1000"/>
         <weld name="quad2connect" body1="DB_last" body2="quad3" anchor="0 0 -0.0235" solref="-10000 -1000"/>
         <weld name="quad4connect" body1="EB_last" body2="quad4" anchor="0 0 -0.0235" solref="-10000 -1000"/>         -->
