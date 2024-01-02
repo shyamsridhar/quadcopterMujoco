@@ -24,12 +24,11 @@ import mujoco as mj
 from mujoco.glfw import glfw
 import numpy as np
 import os
-from matplotlib import pyplot
+from matplotlib import pyplot as plt
 
 xml_path = 'quad1pack.xml'
-simend = 30
+simend = 20
 print_camera_config = 0
-mot1 = []; mot2 = []; mot3 = []; mot4= []
 
 # For callback functions
 button_left = False
@@ -39,7 +38,8 @@ lastx = 0
 lasty = 0
 
 #target for quad1
-target1 = np.array([10, 0, 10], ndmin=2).T
+target1 = np.array([10, 10, 10], ndmin=2).T
+
 
 # kthr = 0.00005
 # ktrq = kthr/5
@@ -51,19 +51,26 @@ kd=6
 ki = 5
 kpr=20
 kdr=20
+movement = 0
+package = 1
+
+z = np.array([])
+x = np.array([])
+y = np.array([])
+w1 = np.array([])
+w2 = np.array([])
+w3 = np.array([])
+
+timelog = np.array([])
 
 
-#arm positions
-r1 = np.array([0.1591,-0.1591,0],ndmin=2).T
-r2 =  np.array([-0.1591,0.1591,0],ndmin=2).T
-r3 =  np.array([0.1591,0.1591,0],ndmin=2).T
-r4 =  np.array([-0.1591,-0.1591,0],ndmin=2).T
 
 #declaring body thrust and gyro torques as global
-th1, th2, th3, th4, tq1, tq2, tq3, tq4 = np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1))
+th1, tq1 = np.zeros((3,4)), np.zeros((3,4))
+
 
 def init_controller(model, data):
-    data.qpos[2] = 0#; data.qpos[0] = 0.5
+    data.qpos[2] = 0.1
     data.qvel[:] = 0
     pass
 
@@ -75,38 +82,34 @@ def controller(model, data):
 
     propvel = data.qvel[6:10]
 
-    propvel[0] = max(min(2000, propvel[0]), 0)
-    propvel[1] = max(min(2000, propvel[1]), 0)
-    propvel[2] = max(min(0, propvel[2]), -2000)
-    propvel[3] = max(min(0, propvel[3]), -2000)
+    propvel[0] = max(min(2000, propvel[0]), 0) 
+    propvel[1] = max(min(2000, propvel[1]), 0) 
+    propvel[2] = max(min(0, propvel[2]), -2000) 
+    propvel[3] = max(min(0, propvel[3]), -2000) 
 
-    thrust = kthr*propvel**2
-    torque = ktrq*propvel**2
+    thrust = kthr*propvel**2 
+    torque = ktrq*propvel**2 
 
     print(propvel)
 
-    global th1, th2, th3, th4, tq1, tq2, tq3, tq4
-    th1, th2, th3, th4, tq1, tq2, tq3, tq4 = np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1)), np.zeros((3,1))
+    global th1, tq1
+    th1, tq1 = np.zeros((3,4)), np.zeros((3,4))
 
-    th1[2], th2[2], th3[2], th4[2] = thrust
 
-    tq1[2], tq2[2], tq3[2], tq4[2] = torque
+    th1[2,:] = thrust
+    tq1[2,:] = torque
  
-
+    #thrust and torques in global coordinate frame
     th1a = np.matmul(R,th1)
-    th2a = np.matmul(R,th2)
-    th3a = np.matmul(R,th3)
-    th4a = np.matmul(R,th4)
     tq1a = np.matmul(R,tq1)
-    tq2a = np.matmul(R,tq2)
-    tq3a = np.matmul(R,tq3)
-    tq4a = np.matmul(R,tq4)
 
-    #xfrc. Find XFRC position based on body id
-    data.xfrc_applied[7][:] = np.concatenate((th1a,-tq1a),axis=0).flatten()
-    data.xfrc_applied[9][:] = np.concatenate((th2a,-tq2a),axis=0).flatten()
-    data.xfrc_applied[11][:] = np.concatenate((th3a,tq3a),axis=0).flatten()
-    data.xfrc_applied[13][:] = np.concatenate((th4a,tq4a),axis=0).flatten()
+
+    #xfrc. Find XFRC position based on body id of propellers
+    data.xfrc_applied[11][:] = np.concatenate((th1a[:,0],-tq1a[:,0]),axis=0).flatten()
+    data.xfrc_applied[13][:] = np.concatenate((th1a[:,1],-tq1a[:,1]),axis=0).flatten()
+    data.xfrc_applied[15][:] = np.concatenate((th1a[:,2],tq1a[:,2]),axis=0).flatten()
+    data.xfrc_applied[17][:] = np.concatenate((th1a[:,3],tq1a[:,3]),axis=0).flatten()
+
 
 
 def keyboard(window, key, scancode, act, mods):
@@ -221,6 +224,7 @@ init_controller(model,data)
 mj.set_mjcb_control(controller)
 
 error = np.array([0, 0, 0], ndmin=2).T
+bodyangvel1_prev = np.array([0, 0], ndmin=2).T
 
 while not glfw.window_should_close(window):
     res = np.zeros((9,1))
@@ -228,10 +232,11 @@ while not glfw.window_should_close(window):
     mj.mju_quat2Mat(res,data.qpos[3:7])
     R = res.reshape((3,3))
 
-    roll = np.arctan2(R[2][1],R[2][2])
-    pitch = np.arcsin(-R[2][0])
+    roll = np.arctan2(R[2][1],R[2][2]) 
+    pitch = np.arcsin(-R[2][0]) 
     yaw = np.arctan2(R[1][0],R[0][0])
 
+    #drone1
     absangvel = data.qvel[3:6].reshape((3,1))
     bdyangvel = np.matmul(R.T,absangvel)
     Tmatinv = np.array([[1,np.sin(roll)*np.tan(pitch),np.cos(roll)*np.tan(pitch)],[0,np.cos(roll),-np.sin(roll)],[0,np.sin(roll)/np.cos(pitch),np.cos(roll)/np.cos(pitch)]])
@@ -239,80 +244,87 @@ while not glfw.window_should_close(window):
     rollrate, pitchrate, yawrate = rpyrates.flatten()
 
     bodyangvel1 = np.array([pitchrate, rollrate, yawrate], ndmin=2).T
-    # bodyangvel1 = np.array([data.qvel[4], data.qvel[3], data.qvel[5]], ndmin=2).T
-    
+
     t = data.time
 
-    ##based on quadcopter matlab
-    # currentpos1 = np.array(data.sensordata[24:27], ndmin=2).T; currentpos2 = np.array(data.sensordata[27:30], ndmin=2).T; currentpos3 = np.array(data.sensordata[30:33], ndmin=2).T; currentpos4 = np.array(data.sensordata[33:36], ndmin=2).T
-    currentpos1 = np.array(data.qpos[0:3], ndmin=2).T
-    currentvel1 = np.array(data.sensordata[12:15], ndmin=2).T
-    currentpr1 = np.array([pitch, roll, yaw], ndmin=2).T
-    # currentrp1vel = np.array(data.sensordata[0:3], ndmin=2); currentrp2vel = np.array(data.sensordata[3:6], ndmin=2); currentrp3vel = np.array(data.sensordata[6:9], ndmin=2); currentrp4vel = np.array(data.sensordata[9:12], ndmin=2)
+    ##based on quadcopter
+    currentpos1 = np.array(data.qpos[0:3], ndmin=2).T 
+    currentvel1 = np.array(data.sensordata[0:3], ndmin=2).T 
+    currentacc1 = np.array(data.sensordata[3:6], ndmin=2).T
+    current_ang_rate = np.array(data.sensordata[6:9], ndmin=2).T
+    currentpr1 = np.array([pitch, roll, yaw], ndmin=2).T 
 
-    #integral error
-    if data.time > 2:
-        error = error + (target1-currentpos1)*(data.time-t_1)
-        t_1 = data.time
+    #integral vertical position error
+    error = error + (target1-currentpos1)*0.001
+    if error[2] >= 10:
+        integral = np.array([0, 0, 10], ndmin=2).T
     else:
-        t_1 = data.time
+        integral = error
+    des_vel_z = 1.1*(target1[2] - currentpos1[2])
+    des_thrust = 10*(des_vel_z - currentvel1[2]) + 0.001*(0-currentacc1[2]) #+ 1*integral  
 
-    dpr1 = kp*(target1-currentpos1) + kd*(0-currentvel1) + ki*error
+    des_xy_vel = 1.1*(target1[0:2]-currentpos1[0:2])
+    current_xy_vel = currentvel1[0:2]
+    current_xy_acc = currentacc1[0:2]
+
+    #integral horizontal position error
+    des_xy_ang = 0.5*(des_xy_vel - current_xy_vel) + 0.005*(0-current_xy_acc) #+ 2*integral[0:2]
+
+    # dpr1body = (target1-currentpos1)*0.1 #+ 0.05*(0-currentvel1)
+
     
-    #calculate desired rp angles in body frame
-    # dpr1body = np.matmul(R.T, target1-currentpos1)
-    # if target1[0]-currentpos1[0] > abs(4):
-    #     dpr1body = (target1-currentpos1)*0.1 + 0.05*(0-currentvel1)
-    # elif target1[0]-currentpos1[0] > abs(2):
-    #     dpr1body = (target1-currentpos1)*0.01 + 0.001*(0 - currentvel1)
-    # else:
-    dpr1body = (target1-currentpos1)*0.1 + 0.05*(0-currentvel1)
-
-    dpr1body[1] = dpr1body[1]*(-1)
-    
-
-    #saturation limit to 60 degrees
-    dpr1body[0] = max(min(np.pi/6, dpr1body[0]), -np.pi/6); dpr1body[1] = max(min(np.pi/6, dpr1body[1]), -np.pi/6)
-
-    dpr1error = dpr1body-currentpr1
-
-    if data.time > 5:
-        dpr1error1 = dpr1error1 + dpr1error*(data.time-t_2)
-        # print(data.time-t_2)
-        t_2 = data.time
-    else:
-        dpr1error1 = dpr1error
-        t_2 = data.time
+    # dpr1body[1] = dpr1body[1]*(-1)
+    des_xy_ang[1] =  des_xy_ang[1]*-1
 
 
+    #saturation limit is 18 degrees
+    max_ang = np.linalg.norm(des_xy_ang[0:2,:], ord=np.inf)
+    if max_ang > np.pi/10:
+        des_xy_ang =  (des_xy_ang*np.pi/10)/max_ang
+
+    # p d controller
+    des_torq = 10*(des_xy_ang - currentpr1[0:2]) + 2*(0 - bodyangvel1[0:2])
+
+    # des_torq = 0.1*(des_ang_rate - bodyangvel1[0:2]) - 0.05*(bodyangvel1[0:2] - bodyangvel1_prev)/0.001 
+    # bodyangvel1_prev = bodyangvel1[0:2]
 
 
-    prf1 = 12*dpr1error + 2*(0-bodyangvel1) + 1*dpr1error1
+    # zf = 50 + dpr1[2] 
+    zf = 50 + des_thrust
+    rf = des_torq[1]
+    pf = des_torq[0]
+    yf = 5*(0-yaw) + 1*(0-yawrate)
 
-    zf = 50 + dpr1[2] #+ prf1[1] + prf1[0]
-    rf = prf1[1]
-    pf = prf1[0]
-    yf = 5*(0-yaw) + 3*(0-yawrate)
-    # yf = kpr*(0 - yaw) - kdr*(bodyangvel1[2])
-
-    print(currentpos1)
+    print(currentpos1[0], currentpos1[1], currentpos1[2])
     #quad1
-    data.ctrl[0] = zf-rf-pf-yf
-    data.ctrl[1] = zf+rf+pf-yf
-    data.ctrl[2] = zf+rf-pf+yf
-    data.ctrl[3] = zf-rf+pf+yf
-
-    # pyplot.figure(1)
-    # pyplot.plot(data.ctrl[0], data.time)
-    # pyplot.show()
+    data.ctrl[0] = zf[0]-rf[0]-pf[0]-yf
+    data.ctrl[1] = zf[0]+rf[0]+pf[0]-yf
+    data.ctrl[2] = zf[0]+rf[0]-pf[0]+yf
+    data.ctrl[3] = zf[0]-rf[0]+pf[0]+yf
 
     for _ in range(2):
       mj.mj_step(model, data)
 
 
+    z = np.append(z, currentpos1[2])
+    x = np.append(x, currentpos1[0])
+    y = np.append(y, currentpos1[1])
+    w1 = np.append(w1, currentpr1[0])
+    w2 = np.append(w2, currentpr1[1])
+    w3 = np.append(w3, currentpr1[2])
+    timelog = np.append(timelog, data.time)
+
     if (data.time>=simend):
         break
+      
 
+    # if np.all(abs(target1 - currentpos1) <= tol) and data.time>=10:
+    #     print("setting new target")
+    #     target1 = target1 + np.array([0.1,0,0], ndmin=2).T
+    #     # target2 = target2 + np.array([0.1,0,0], ndmin=2).T
+    #     # target3 = target3 + np.array([0.1,0,0], ndmin=2).T
+    #     # target4 = target4 + np.array([0.1,0,0], ndmin=2).T
+    
     # get framebuffer viewport
     viewport_width, viewport_height = glfw.get_framebuffer_size(
         window)
@@ -331,7 +343,10 @@ while not glfw.window_should_close(window):
     glfw.poll_events()
 
 
-# pyplot.plot(mot1)
-# pyplot.show()
-
 glfw.terminate()
+
+
+plt.scatter(timelog,z)
+plt.scatter(timelog,x)
+plt.scatter(timelog,y)
+plt.show()
