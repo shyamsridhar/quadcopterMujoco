@@ -54,8 +54,8 @@
                 <geom type="box" group="0" size="0.0725 0.015865 0.0185" rgba="0.7 0 0 1"/>
                 <geom type="cylinder" group="0" pos="0.0915 0 0" euler="0 0 0" size="0.019 0.0185" rgba="0.7 0 0 1"/>
                 <geom type="cylinder" group="0" pos="0.0915 0 0.037" euler="0 0 0" size="0.002 0.0185"/>
-                <body name="propeller_ccw_1" pos="0.0915 0 0.037" euler='0 0 0'>
-                    <joint armature="0" axis="0 0 1" limited="false" frictionloss="0" name="motor1" pos="0 0 0" type="hinge"/>
+                <body name="propeller_ccw_11" pos="0.0915 0 0.037" euler='0 0 0'>
+                    <joint armature="0" axis="0 0 1" limited="false" frictionloss="0" name="motor11" pos="0 0 0" type="hinge"/>
                     <geom  type="mesh" group="0"  mesh="propeller_ccw" />
                     <inertial pos="0 0 0" mass="0.002" diaginertia="0.0000011 0.0000011 0.0000009" />
                 </body>
@@ -65,8 +65,8 @@
                 <geom type="box" group="0" size="0.0725 0.015865 0.0185" rgba="0.9 0.9 0.9 1"/>
                 <geom type="cylinder" group="0" pos="0.0915 0 0" euler="0 0 0" size="0.019 0.0185" rgba="0.9 0.9 0.9 1"/>
                 <geom type="cylinder" group="0" pos="0.0915 0 0.037" euler="0 0 0" size="0.002 0.0185"/>
-                <body name="propeller_ccw_2" pos="0.0915 0 0.037" euler='0 0 0'>
-                    <joint armature="0" axis="0 0 1" limited="false" frictionloss="0" name="motor2" pos="0 0 0" type="hinge"/>
+                <body name="propeller_ccw_12" pos="0.0915 0 0.037" euler='0 0 0'>
+                    <joint armature="0" axis="0 0 1" limited="false" frictionloss="0" name="motor12" pos="0 0 0" type="hinge"/>
                     <geom  type="mesh" group="0"  mesh="propeller_ccw" />
                     <inertial pos="0 0 0" mass="0.002" diaginertia="0.0000011 0.0000011 0.0000009" />
                 </body>
@@ -76,8 +76,8 @@
                 <geom type="box" group="0" size="0.0725 0.015865 0.0185" rgba="0.7 0 0 1"/>
                 <geom type="cylinder" group="0" pos="0.0915 0 0" euler="0 0 0" size="0.019 0.0185" rgba="0.7 0 0 1"/>
                 <geom type="cylinder" group="0" pos="0.0915 0 0.037" euler="0 0 0" size="0.002 0.0185"/>
-                <body name="propeller_cw_3" pos="0.0915 0 0.037" euler='0 0 0'>
-                    <joint armature="0" axis="0 0 1" limited="false" frictionloss="0" name="motor3" pos="0 0 0" type="hinge"/>
+                <body name="propeller_cw_13" pos="0.0915 0 0.037" euler='0 0 0'>
+                    <joint armature="0" axis="0 0 1" limited="false" frictionloss="0" name="motor13" pos="0 0 0" type="hinge"/>
                     <geom  type="mesh" group="0"  mesh="propeller_cw" />
                     <inertial pos="0 0 0" mass="0.002" diaginertia="0.0000011 0.0000011 0.0000009" />
                 </body>
@@ -87,8 +87,8 @@
                 <geom type="box" group="0" size="0.0725 0.015865 0.0185" rgba="0.9 0.9 0.9 1"/>
                 <geom type="cylinder" group="0" pos="0.0915 0 0" euler="0 0 0" size="0.019 0.0185" rgba="0.9 0.9 0.9 1"/>
                 <geom type="cylinder" group="0" pos="0.0915 0 0.037" euler="0 0 0" size="0.002 0.0185"/>
-                <body name="propeller_cw_4" pos="0.0915 0 0.037" euler='0 0 0'>
-                    <joint armature="0" axis="0 0 1" limited="false" frictionloss="0" name="motor4" pos="0 0 0" type="hinge"/>
+                <body name="propeller_cw_14" pos="0.0915 0 0.037" euler='0 0 0'>
+                    <joint armature="0" axis="0 0 1" limited="false" frictionloss="0" name="motor14" pos="0 0 0" type="hinge"/>
                     <geom  type="mesh" group="0"  mesh="propeller_cw" />
                     <inertial pos="0 0 0" mass="0.002" diaginertia="0.0000011 0.0000011 0.0000009" />
                 </body>
@@ -103,7 +103,7 @@
             <inertial pos="0 0 0" mass="1.5" fullinertia="0.00011 0.00011 0.00002 0.000000011 0.00000002 0.000000011" /> 
         </body>
 
-        <!-- <body name="quad2" pos="4 -4 0.1" euler='0 0 0'>
+        <body name="quad2" pos="4 -4 0.1" euler='0 0 0'>
             <freejoint name="root2"/>
             <geom  type="box" group="0"  size="0.05513 0.05513 0.0185" rgba="0.23 0.23 0.23 1"/>
             <site name="com2" group="0" pos="0 0 0"/>
@@ -170,7 +170,7 @@
             <inertial pos="0 0 0" mass="1.5" fullinertia="0.00011 0.00011 0.00002 0.000000011 0.00000002 0.000000011" /> 
         </body>
 
-       <body name="quad3" pos="-4 -4 0.1" euler='0 0 0'>
+    <!--    <body name="quad3" pos="-4 -4 0.1" euler='0 0 0'>
             <freejoint name="root3"/>
             <geom  type="box" group="0"  size="0.05513 0.05513 0.0185" rgba="0.23 0.23 0.23 1"/>
             <site name="com3" group="0" pos="0 0 0"/>
@@ -315,7 +315,6 @@
                     <joint kind="main" damping=".015"/>
                     <geom type="capsule" size=".0005" rgba=".8 .2 .1 1" condim="1"/>          
                 </composite>
-                <!-- <inertial pos="0 0 0" mass="0.05" diaginertia="0.000000001 0.000000001 0.000000001" /> -->
             </body> 
     
             <!-- <body name="cable2" pos="0 0 0.05" euler="0 0 -45"> 
@@ -346,7 +345,7 @@
     </worldbody>
 	
     <equality>
-        <weld name="quad1connect" body1="B_last" body2="quad1" anchor="0 0 -0.0235" solref="-10000 -1000"/>
+        <!-- <weld name="quad1connect" body1="B_last" body2="quad1" anchor="0 0 -0.0235" solref="-10000 -1000"/> -->
         <!-- <weld name="quad1connect" body1="B_last" body2="package" anchor="0 0 0.1"/> -->
         <!-- <weld name="quad3connect" body1="CB_last" body2="quad2" anchor="0 0 -0.0235" solref="-10000 -1000"/>
         <weld name="quad2connect" body1="DB_last" body2="quad3" anchor="0 0 -0.0235" solref="-10000 -1000"/>
@@ -357,26 +356,28 @@
     <sensor>
 
         <framelinvel name="vel1" objtype="site" objname="com"/>
-        <!-- <framelinvel name="vel2" objtype="site" objname="com2"/>
-        <framelinvel name="vel3" objtype="site" objname="com3"/>
-        <framelinvel name="vel4" objtype="site" objname="com4"/> -->
         <framelinacc name="acc1" objtype="site" objname="com"/>
-        <frameangacc name="angacc1" objtype="body" objname="quad1"/>
+        <framelinvel name="vel2" objtype="site" objname="com2"/>
+        <framelinacc name="acc2" objtype="site" objname="com2"/>
+        <!-- <framelinvel name="vel3" objtype="site" objname="com3"/>
+        <framelinvel name="vel4" objtype="site" objname="com4"/> -->
+
+        <!-- <frameangacc name="angacc1" objtype="body" objname="quad1"/> -->
 
 	</sensor>
 	
     <actuator>
-		<motor name="m1" ctrllimited="true" ctrlrange="0 100" gear="0.0011" joint="motor1"/>
-		<motor name="m2" ctrllimited="true" ctrlrange="0 100" gear="0.0011" joint="motor2"/>
-		<motor name="m3" ctrllimited="true" ctrlrange="0 100" gear="-0.0011" joint="motor3"/>
-		<motor name="m4" ctrllimited="true" ctrlrange="0 100" gear="-0.0011" joint="motor4"/>
+		<motor name="m1" ctrllimited="true" ctrlrange="0 100" gear="0.0011" joint="motor11"/>
+		<motor name="m2" ctrllimited="true" ctrlrange="0 100" gear="0.0011" joint="motor12"/>
+		<motor name="m3" ctrllimited="true" ctrlrange="0 100" gear="-0.0011" joint="motor13"/>
+		<motor name="m4" ctrllimited="true" ctrlrange="0 100" gear="-0.0011" joint="motor14"/>
 
-        <!-- <motor name="m21" ctrllimited="true" ctrlrange="0 100" gear="0.0011" joint="motor21"/>
+        <motor name="m21" ctrllimited="true" ctrlrange="0 100" gear="0.0011" joint="motor21"/>
 		<motor name="m22" ctrllimited="true" ctrlrange="0 100" gear="0.0011" joint="motor22"/>
 		<motor name="m23" ctrllimited="true" ctrlrange="0 100" gear="-0.0011" joint="motor23"/>
 		<motor name="m24" ctrllimited="true" ctrlrange="0 100" gear="-0.0011" joint="motor24"/>
 
-        <motor name="m31" ctrllimited="true" ctrlrange="0 100" gear="0.0011" joint="motor31"/>
+        <!-- <motor name="m31" ctrllimited="true" ctrlrange="0 100" gear="0.0011" joint="motor31"/>
 		<motor name="m32" ctrllimited="true" ctrlrange="0 100" gear="0.0011" joint="motor32"/>
 		<motor name="m33" ctrllimited="true" ctrlrange="0 100" gear="-0.0011" joint="motor33"/>
 		<motor name="m34" ctrllimited="true" ctrlrange="0 100" gear="-0.0011" joint="motor34"/>
