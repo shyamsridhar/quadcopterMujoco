@@ -301,12 +301,12 @@ def cntrl(data, target, quad: str):
     des_torq = 10*(des_xy_ang - cur_pry[0:2]) + 2*(0 - bodyangvel[0:2])
 
     # zf = 50 + dpr1[2] 
-    zf = 50 + des_thrust
-    rf = des_torq[1]
-    pf = des_torq[0]
-    yf = 5*(0-cur_pry[2]) + 1*(0-bodyangvel[2])
+    zf_l = 50 + des_thrust
+    rf_l = des_torq[1]
+    pf_l = des_torq[0]
+    yf_l = 5*(0-cur_pry[2]) + 1*(0-bodyangvel[2])
 
-    return zf, rf, pf, yf
+    return zf_l, rf_l, pf_l, yf_l
 
 
 #get the full path
