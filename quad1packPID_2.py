@@ -38,7 +38,8 @@ lastx = 0
 lasty = 0
 
 #target for quad1
-target1 = np.array([2, 1, 10], ndmin=2).T
+target1 = np.array([4, 4, 10], ndmin=2).T
+target2 = np.array([4, -4, 10], ndmin=2).T
 
 
 # kthr = 0.00005
@@ -46,13 +47,6 @@ target1 = np.array([2, 1, 10], ndmin=2).T
 kthr = 1.08E-05
 ktrq = 1.62E-07
 
-kp=0.2*50
-kd=6
-ki = 5
-kpr=20
-kdr=20
-movement = 0
-package = 1
 
 z = np.array([])
 x = np.array([])
@@ -64,59 +58,25 @@ w3 = np.array([])
 timelog = np.array([])
 
 
-
-#declaring body thrust and gyro torques as global
-th1, tq1 = np.zeros((3,4)), np.zeros((3,4))
-
-
 def init_controller(model, data):
-    data.qpos[2] = 0.1
+    data.qpos[2] = 0.1; data.qpos[13] = 0.1
     data.qvel[:] = 0
     pass
+
 
 def controller(model, data):
     """
     Applies force on to the correct propeller depending on the speed of the motor
     """
-    R = rotation_m(data, 3, 7)
-    R2 = rotation_m(data, 3, 7)
-
-    propvel = data.qvel[6:10]; propvel2 = data.qvel[6:10]
-
-    # propvel[0] = max(min(2000, propvel[0]), 0) 
-    # propvel[1] = max(min(2000, propvel[1]), 0) 
-    # propvel[2] = max(min(0, propvel[2]), -2000) 
-    # propvel[3] = max(min(0, propvel[3]), -2000) 
-
-    thrust = kthr*propvel**2 
-    torque = ktrq*propvel**2 
-
-    print(propvel)
-
-    global th1, tq1
-    th1, tq1 = np.zeros((3,4)), np.zeros((3,4))
-
-
-    th1[2,:] = thrust
-    tq1[2,:] = torque
- 
-    #thrust and torques in global coordinate frame
-    th1a = np.matmul(R,th1)
-    tq1a = np.matmul(R,tq1)
-
-
-    #xfrc. Find XFRC position based on body id of propellers
-    data.xfrc_applied[11][:] = np.concatenate((th1a[:,0],-tq1a[:,0]),axis=0).flatten()
-    data.xfrc_applied[13][:] = np.concatenate((th1a[:,1],-tq1a[:,1]),axis=0).flatten()
-    data.xfrc_applied[15][:] = np.concatenate((th1a[:,2],tq1a[:,2]),axis=0).flatten()
-    data.xfrc_applied[17][:] = np.concatenate((th1a[:,3],tq1a[:,3]),axis=0).flatten()
-
+    apply_force(model, data, 1)
+    apply_force(model, data, 2)
 
 
 def keyboard(window, key, scancode, act, mods):
     if act == glfw.PRESS and key == glfw.KEY_BACKSPACE:
         mj.mj_resetData(model, data)
         mj.mj_forward(model, data)
+
 
 def mouse_button(window, button, act, mods):
     # update button state
@@ -133,6 +93,7 @@ def mouse_button(window, button, act, mods):
 
     # update mouse position
     glfw.get_cursor_pos(window)
+
 
 def mouse_move(window, xpos, ypos):
     # compute mouse displacement, save
@@ -178,11 +139,47 @@ def mouse_move(window, xpos, ypos):
     mj.mjv_moveCamera(model, action, dx/height,
                       dy/height, scene, cam)
 
+
 def scroll(window, xoffset, yoffset):
     action = mj.mjtMouse.mjMOUSE_ZOOM
     mj.mjv_moveCamera(model, action, 0.0, -0.05 *
                       yoffset, scene, cam)
 
+
+def apply_force(model, data, quadNo):
+
+    """ Applies force on the propellers."""
+
+    jntId = mj.mj_name2id(model, 3, f"root{quadNo}")
+    adr_start = model.jnt_qposadr[jntId]
+    R = rotation_m(data, adr_start+3, adr_start+7)
+
+    dofId = mj.mj_name2id(model, 3, f"motor{quadNo}1")
+    adr_start = model.jnt_dofadr[dofId]
+
+    propvel = data.qvel[adr_start:adr_start+4]
+
+    thrust = kthr*propvel**2 
+    torque = ktrq*propvel**2 
+
+    id1 = mj.mj_name2id(model, 1, f"propeller_ccw_{quadNo}1")
+    id2 = mj.mj_name2id(model, 1, f"propeller_ccw_{quadNo}2")
+    id3 = mj.mj_name2id(model, 1, f"propeller_cw_{quadNo}3")
+    id4 = mj.mj_name2id(model, 1, f"propeller_cw_{quadNo}4")
+
+    th1, tq1 = np.zeros((3,4)), np.zeros((3,4))
+    th1[2,:] = thrust
+    tq1[2,:] = torque
+
+    th1a = np.matmul(R,th1)
+    tq1a = np.matmul(R,tq1)
+
+
+    #xfrc. Find XFRC position based on body id of propellers
+    data.xfrc_applied[id1][:] = np.concatenate((th1a[:,0],-tq1a[:,0]),axis=0).flatten()
+    data.xfrc_applied[id2][:] = np.concatenate((th1a[:,1],-tq1a[:,1]),axis=0).flatten()
+    data.xfrc_applied[id3][:] = np.concatenate((th1a[:,2],tq1a[:,2]),axis=0).flatten()
+    data.xfrc_applied[id4][:] = np.concatenate((th1a[:,3],tq1a[:,3]),axis=0).flatten()
 
 
 def rotation_m(data, start, end):
@@ -250,6 +247,9 @@ def cntrl(data, target, quad: str):
     """
     Function which contains the flight controller PID code. MjData positions have been hardcoded
     
+    Variables:
+        qvelStart: Starting postion of angular velocity of root joints
+        qvelEng: Ending position of angular velocity of root joints
     """
     
     #initializing variables for retrieving data
@@ -258,17 +258,17 @@ def cntrl(data, target, quad: str):
         qposStart, qposEnd, linVelStart, linVelEnd = 0, 3, 0, 3
         linaccStart, linaccEnd = 3, 6
     elif quad == "quad2":
-        quatStart = 3; quatEnd = 7; qvelStart = 3; qvelEnd = 6
-        qposStart = 0; qposEnd = 3; linVelStart = 0; linVelEnd = 3
-        linaccStart = 3; linaccEnd = 6
+        quatStart, quatEnd, qvelStart, qvelEnd  = 14, 18, 13, 16
+        qposStart, qposEnd, linVelStart, linVelEnd = 11, 14, 6, 9
+        linaccStart, linaccEnd = 9, 12
     elif quad == "quad3":
-        quatStart = 3; quatEnd = 7; qvelStart = 3; qvelEnd = 6
-        qposStart = 0; qposEnd = 3; linVelStart = 0; linVelEnd = 3
-        linaccStart = 3; linaccEnd = 6
+        quatStart, quatEnd, qvelStart, qvelEnd  = 14, 18, 13, 16
+        qposStart, qposEnd, linVelStart, linVelEnd = 11, 14, 12, 15
+        linaccStart, linaccEnd = 15, 18
     elif quad == "quad4":
-        quatStart = 3; quatEnd = 7; qvelStart = 3; qvelEnd = 6
-        qposStart = 0; qposEnd = 3; linVelStart = 0; linVelEnd = 3
-        linaccStart = 3; linaccEnd = 6
+        quatStart, quatEnd, qvelStart, qvelEnd  = 14, 18, 13, 16
+        qposStart, qposEnd, linVelStart, linVelEnd = 11, 14, 6, 9
+        linaccStart, linaccEnd = 9, 12
 
 
     R = rotation_m(data, quatStart, quatEnd)
@@ -307,43 +307,6 @@ def cntrl(data, target, quad: str):
     yf = 5*(0-cur_pry[2]) + 1*(0-bodyangvel[2])
 
     return zf, rf, pf, yf
-
-
-# def jntVel(model, data, name: str, dataReq: str, objType: int):
-#     """
-#     Fetches the data from mjData.
-
-#     Args:
-#         model: mjModel
-#         data: mjData
-#         name: Name of the body or joint
-#         dataReq: Data required like velocity, position
-#         objType: Type of object mjtObj
-#     """
-    
-#     if name is None:
-#         return -1
-    
-#     id = mj.mjname2id(model,objType,name)
-
-#     if dataReq == "pos":
-#         adr_start = model.qposadr[id]
-#         adr_end = model.qposadr[id+1]
-#         return data.qpos[adr_start:adr_start+3]
-#     elif dataReq == "vel":
-#         adr_start = model.dofadr[id]
-#         # adr_end = model.dofadr[id+1]
-#         jnt_type = model.jnt_type[id]
-#         if jnt_type == 0:
-#             adr_end = adr_start + 6
-#         elif jnt_type == 1:
-#             adr_end = adr_start + 3
-#         elif jnt_type == 3:
-#             adr_end = adr_start + 1
-
-#         vel = data.qpos[adr_start:adr_end]
-#     elif dataReq == "quat":
-#         pass
 
 
 #get the full path
@@ -390,16 +353,21 @@ bodyangvel1_prev = np.array([0, 0], ndmin=2).T
 
 while not glfw.window_should_close(window):
 
-    # id = mj.mjname2id(model,3,"root1")
-
-    
     zf, rf, pf, yf = cntrl(data, target1, "quad1")
+    zf2, rf2, pf2, yf2 = cntrl(data, target2, "quad2")
+    # zf3, rf3, pf3, yf3 = cntrl(data, target3, "quad3")
+    # zf4, rf4, pf4, yf4 = cntrl(data, target4, "quad4")
 
 
     data.ctrl[0] = zf[0]-rf[0]-pf[0]-yf
     data.ctrl[1] = zf[0]+rf[0]+pf[0]-yf
     data.ctrl[2] = zf[0]+rf[0]-pf[0]+yf
     data.ctrl[3] = zf[0]-rf[0]+pf[0]+yf
+
+    data.ctrl[4] = zf2[0]-rf2[0]-pf2[0]-yf2
+    data.ctrl[5] = zf2[0]+rf2[0]+pf2[0]-yf2
+    data.ctrl[6] = zf2[0]+rf2[0]-pf2[0]+yf2
+    data.ctrl[7] = zf2[0]-rf2[0]+pf2[0]+yf2
 
     for _ in range(2):
       mj.mj_step(model, data)
