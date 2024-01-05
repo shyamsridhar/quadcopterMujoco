@@ -38,7 +38,7 @@ lastx = 0
 lasty = 0
 
 #target for quad1
-target1 = np.array([2, 2, 10], ndmin=2).T
+# target1 = np.array([2, 2, 10], ndmin=2).T
 target2 = np.array([2, -2, 10], ndmin=2).T
 target3 = np.array([-2, -2, 10], ndmin=2).T
 target4 = np.array([-2, 2, 10], ndmin=2).T
@@ -60,6 +60,16 @@ w3 = np.array([])
 timelog = np.array([])
 
 
+target1 = np.zeros((10,3)); target2 = np.zeros((10,3))
+ti = np.linspace(0, 1, num=10, endpoint=True).T
+
+for i in range(len(ti)):
+    target1[i,0] = -ti[i]*3.65 + 5.65
+    target1[i,1] = -ti[i]*3.65 + 5.65
+    target1[i,2] = ti[i]*20
+
+
+
 def init_controller(model, data):
     data.qpos[2] = 0.1; data.qpos[13] = 0.1; data.qpos[2] = 0.1; data.qpos[13] = 0.1
     data.qvel[:] = 0
@@ -71,9 +81,9 @@ def controller(model, data):
     Applies force on to the correct propeller depending on the speed of the motor
     """
     apply_force(model, data, 1)
-    apply_force(model, data, 2)
-    apply_force(model, data, 3)
-    apply_force(model, data, 4)
+    # apply_force(model, data, 2)
+    # apply_force(model, data, 3)
+    # apply_force(model, data, 4)
 
 
 def keyboard(window, key, scancode, act, mods):
@@ -165,6 +175,8 @@ def apply_force(model, data, quadNo):
 
     thrust = kthr*propvel**2 
     torque = ktrq*propvel**2 
+
+    # print(propvel)
 
     id1 = mj.mj_name2id(model, 1, f"propeller_ccw_{quadNo}1")
     id2 = mj.mj_name2id(model, 1, f"propeller_ccw_{quadNo}2")
@@ -283,6 +295,7 @@ def cntrl(data, target, quad: str):
     currentvel = np.array(data.sensordata[linVelStart:linVelEnd], ndmin=2).T 
     currentacc = np.array(data.sensordata[linaccStart:linaccEnd], ndmin=2).T
 
+    # print(data.qpos[0:3])
     #Altitude model
     des_vel_z = 1.1*(target[2] - currentpos[2])
     des_thrust = 10*(des_vel_z - currentvel[2]) + 0.001*(0-currentacc[2])
@@ -295,6 +308,10 @@ def cntrl(data, target, quad: str):
 
     des_xy_ang[1] =  des_xy_ang[1]*-1
 
+    #Current controller does not put any constraint on des_xy_ang. This is being calculated based on velocity error.
+    #As a reult des_xy_ang could still be considerable amount even though quadcopter is tilted heavily.
+    #The following saturation only ensures that des_xy_ang does not exceed 18 deg but there is no check to see if
+    #quadcopter is already tilted to max or not
 
     #saturation limit is 18 degrees
     max_ang = np.linalg.norm(des_xy_ang[0:2,:], ord=np.inf)
@@ -352,14 +369,14 @@ init_controller(model,data)
 #set the controller
 mj.set_mjcb_control(controller)
 
-
+i = 1
 while not glfw.window_should_close(window):
 
-    zf, rf, pf, yf = cntrl(data, target1, "quad1")
+
+    zf, rf, pf, yf = cntrl(data, target1[i,:], "quad1")
     zf2, rf2, pf2, yf2 = cntrl(data, target2, "quad2")
     zf3, rf3, pf3, yf3 = cntrl(data, target3, "quad3")
     zf4, rf4, pf4, yf4 = cntrl(data, target4, "quad4")
-
 
     data.ctrl[0] = zf[0]-rf[0]-pf[0]-yf[0]
     data.ctrl[1] = zf[0]+rf[0]+pf[0]-yf[0]
@@ -385,6 +402,16 @@ while not glfw.window_should_close(window):
       mj.mj_step(model, data)
 
 
+    if np.all(abs(target1[i,:]-np.array(data.qpos[0:3])) <= 7e-1):
+        i = i + 1
+        # print(i)
+
+    if i == 10:
+        break
+
+    print(target1[i,:]-np.array(data.qpos[0:3]))
+
+
     # z = np.append(z, currentpos1[2])
     # x = np.append(x, currentpos1[0])
     # y = np.append(y, currentpos1[1])
@@ -398,12 +425,12 @@ while not glfw.window_should_close(window):
       
 
     # if np.all(abs(target1 - currentpos1) <= tol) and data.time>=10:
-    if data.time>=10:
-        # print("setting new target")
-        target1 = target1 + np.array([0.1,0,0], ndmin=2).T
-        target2 = target2 + np.array([0.1,0,0], ndmin=2).T
-        target3 = target2 - np.array([4,0,0], ndmin=2).T
-        target4 = target1 - np.array([4,0,0], ndmin=2).T
+    # if data.time>=10:
+    #     # print("setting new target")
+    #     target1 = target1 + np.array([0.1,0,0], ndmin=2).T
+    #     target2 = target2 + np.array([0.1,0,0], ndmin=2).T
+    #     target3 = np.array(data.qpos[11:14], ndmin=2).T - np.array([4,0,0], ndmin=2).T
+    #     target4 = np.array(data.qpos[0:3], ndmin=2).T - np.array([4,0,0], ndmin=2).T
     
     # get framebuffer viewport
     viewport_width, viewport_height = glfw.get_framebuffer_size(
@@ -427,6 +454,6 @@ glfw.terminate()
 
 
 # plt.scatter(timelog,z)
-plt.scatter(timelog,x)
+# plt.scatter(timelog,x)
 # plt.scatter(timelog,y)
-plt.show()
+# plt.show()

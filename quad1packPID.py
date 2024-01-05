@@ -38,7 +38,7 @@ lastx = 0
 lasty = 0
 
 #target for quad1
-target1 = np.array([10, 10, 10], ndmin=2).T
+target1 = np.array([2, 1, 10], ndmin=2).T
 
 
 # kthr = 0.00005
@@ -79,6 +79,10 @@ def controller(model, data):
     mj.mju_quat2Mat(res,data.qpos[3:7])
 
     R = res.reshape((3,3))
+
+    # mj.mj_name2id(model, 3, "motor1"); mj.mj_name2id(model, 3, "motor2"); mj.mj_name2id(model, 3, "motor3"); mj.mj_name2id(model, 3, "motor4"); 
+
+
 
     propvel = data.qvel[6:10]
 
@@ -184,6 +188,76 @@ def scroll(window, xoffset, yoffset):
 
 
 
+def rotation_m(data, start, end):
+    res = np.zeros((9,1))  
+    mj.mju_quat2Mat(res,data.qpos[start:end])
+    R = res.reshape((3,3))
+    return R
+
+#takes rotation matrix as input
+def calculate_pry(R_M):
+    roll = np.arctan2(R_M[2][1],R_M[2][2]) 
+    pitch = np.arcsin(-R_M[2][0]) 
+    yaw = np.arctan2(R_M[1][0],R_M[0][0])
+    current_pry = np.array([pitch, roll, yaw], ndmin=2).T
+    return current_pry
+
+def calculate_R_rate(pry):
+    pitch = pry[0]; roll = pry[1]; yaw = pry[2]
+    R_rate = np.array([[1,np.sin(roll[0])*np.tan(pitch[0]),np.cos(roll[0])*np.tan(pitch[0])],[0,np.cos(roll[0]),-np.sin(roll[0])],[0,np.sin(roll[0])/np.cos(pitch[0]),np.cos(roll[0])/np.cos(pitch[0])]])
+    return R_rate
+
+def calculate_ang_vel(R_M, pry, qvelStart, qvelEnd):
+    absangvel = data.qvel[qvelStart:qvelEnd].reshape((3,1))
+    bdyangvel = np.matmul(R_M.T,absangvel)
+    Tmatinv = calculate_R_rate(pry)
+    rpyrates = np.matmul(Tmatinv,bdyangvel)
+    rollrate, pitchrate, yawrate = rpyrates.flatten()
+
+    bodyangvel = np.array([pitchrate, rollrate, yawrate], ndmin=2).T
+    return bodyangvel
+
+
+def cntrl(data, qposStart, qposEnd, qvelStart, qvelEnd, target, ):
+    R = rotation_m(data, 3, 7)
+    cur_pry = calculate_pry(R)
+    bodyangvel = calculate_ang_vel(R, cur_pry, 3, 6)
+    currentpos = np.array(data.qpos[0:3], ndmin=2).T 
+    currentvel = np.array(data.sensordata[0:3], ndmin=2).T 
+    currentacc = np.array(data.sensordata[3:6], ndmin=2).T
+
+    #Altitude model
+    des_vel_z = 1.1*(target[2] - currentpos[2])
+    des_thrust = 10*(des_vel_z - currentvel[2]) + 0.001*(0-currentacc[2])
+
+    #horizontal model
+    des_xy_vel = 1.1*(target[0:2]-currentpos[0:2])
+    current_xy_vel = currentvel[0:2]
+    current_xy_acc = currentacc[0:2]
+    des_xy_ang = 0.5*(des_xy_vel - current_xy_vel) + 0.005*(0-current_xy_acc)
+
+    des_xy_ang[1] =  des_xy_ang[1]*-1
+
+
+    #saturation limit is 18 degrees
+    max_ang = np.linalg.norm(des_xy_ang[0:2,:], ord=np.inf)
+    if max_ang > np.pi/10:
+        des_xy_ang =  (des_xy_ang*np.pi/10)/max_ang
+
+    # p d controller for attitude model
+    des_torq = 10*(des_xy_ang - cur_pry[0:2]) + 2*(0 - bodyangvel[0:2])
+
+    # zf = 50 + dpr1[2] 
+    zf = 50 + des_thrust
+    rf = des_torq[1]
+    pf = des_torq[0]
+    yf = 5*(0-yaw) + 1*(0-yawrate)
+
+    return zf, rf, pf, yf
+
+
+
+
 #get the full path
 dirname = os.path.dirname(__file__)
 abspath = os.path.join(dirname + "/" + xml_path)
@@ -227,23 +301,20 @@ error = np.array([0, 0, 0], ndmin=2).T
 bodyangvel1_prev = np.array([0, 0], ndmin=2).T
 
 while not glfw.window_should_close(window):
-    res = np.zeros((9,1))
 
-    mj.mju_quat2Mat(res,data.qpos[3:7])
-    R = res.reshape((3,3))
+    id = mj.mjname2id(model,3,"root1")
 
-    roll = np.arctan2(R[2][1],R[2][2]) 
-    pitch = np.arcsin(-R[2][0]) 
-    yaw = np.arctan2(R[1][0],R[0][0])
+    R = rotation_m(data, 3, 7)
 
-    #drone1
-    absangvel = data.qvel[3:6].reshape((3,1))
-    bdyangvel = np.matmul(R.T,absangvel)
-    Tmatinv = np.array([[1,np.sin(roll)*np.tan(pitch),np.cos(roll)*np.tan(pitch)],[0,np.cos(roll),-np.sin(roll)],[0,np.sin(roll)/np.cos(pitch),np.cos(roll)/np.cos(pitch)]])
-    rpyrates = np.matmul(Tmatinv,bdyangvel)
-    rollrate, pitchrate, yawrate = rpyrates.flatten()
+    currentpr1 = calculate_pry(R)
 
-    bodyangvel1 = np.array([pitchrate, rollrate, yawrate], ndmin=2).T
+    # pitch = currentpr1[0]; roll = currentpr1[1]; 
+
+    bodyangvel1 = calculate_ang_vel(R, currentpr1, 3, 6)
+
+    yawrate = bodyangvel1[2]; yaw = currentpr1[2]
+    # #drone1
+
 
     t = data.time
 
@@ -251,8 +322,8 @@ while not glfw.window_should_close(window):
     currentpos1 = np.array(data.qpos[0:3], ndmin=2).T 
     currentvel1 = np.array(data.sensordata[0:3], ndmin=2).T 
     currentacc1 = np.array(data.sensordata[3:6], ndmin=2).T
-    current_ang_rate = np.array(data.sensordata[6:9], ndmin=2).T
-    currentpr1 = np.array([pitch, roll, yaw], ndmin=2).T 
+    # current_ang_rate = np.array(data.sensordata[6:9], ndmin=2).T
+    # currentpr1 = np.array([pitch, roll, yaw], ndmin=2).T 
 
     #integral vertical position error
     error = error + (target1-currentpos1)*0.001

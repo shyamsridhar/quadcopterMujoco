@@ -18,19 +18,19 @@
         <light name="fixedlight" mode="fixed" directional="true"/>
         <geom name="floor" size="0 0 0.1" type="plane" material="grid" condim="3" friction="1 0 0"/>
 
-        <body name="table1" pos="4 4 0.03075" euler="0 0 0">
+        <body name="table1" pos="5.65 5.65 0.03075" euler="0 0 0">
             <geom type="box" size="0.08 0.08 0.03075" rgba="0.8 0.5 0.23 1"/>
         </body>
-        <body name="table2" pos="4 -4 0.03075" euler="0 0 0">
+        <body name="table2" pos="5.65 -5.65 0.03075" euler="0 0 0">
             <geom type="box" size="0.08 0.08 0.03075" rgba="0.8 0.5 0.23 1"/>
         </body>
-        <body name="table3" pos="-4 -4 0.03075" euler="0 0 0">
+        <body name="table3" pos="-5.65 -5.65 0.03075" euler="0 0 0">
             <geom type="box" size="0.08 0.08 0.03075" rgba="0.8 0.5 0.23 1"/>
         </body>
-        <body name="table4" pos="-4 4 0.03075" euler="0 0 0">
+        <body name="table4" pos="-5.65 5.65 0.03075" euler="0 0 0">
             <geom type="box" size="0.08 0.08 0.03075" rgba="0.8 0.5 0.23 1"/>
         </body>
-        <body name="quad1" pos="4 4 0.1" euler='0 0 0'>
+        <body name="quad1" pos="5.65 5.65 0.1" euler='0 0 0'>
             <freejoint name="root1"/>
             <geom  type="box" group="0"  size="0.05513 0.05513 0.0185" rgba="0.23 0.23 0.23 1"/>
             <site name="com" group="0" pos="0 0 0"/>
@@ -103,7 +103,7 @@
             <inertial pos="0 0 0" mass="1.5" fullinertia="0.00011 0.00011 0.00002 0.000000011 0.00000002 0.000000011" /> 
         </body>
 
-        <body name="quad2" pos="4 -4 0.1" euler='0 0 0'>
+        <body name="quad2" pos="5.65 -5.65 0.1" euler='0 0 0'>
             <freejoint name="root2"/>
             <geom  type="box" group="0"  size="0.05513 0.05513 0.0185" rgba="0.23 0.23 0.23 1"/>
             <site name="com2" group="0" pos="0 0 0"/>
@@ -170,7 +170,7 @@
             <inertial pos="0 0 0" mass="1.5" fullinertia="0.00011 0.00011 0.00002 0.000000011 0.00000002 0.000000011" /> 
         </body>
 
-    <!--    <body name="quad3" pos="-4 -4 0.1" euler='0 0 0'>
+       <body name="quad3" pos="-5.65 -5.65 0.1" euler='0 0 0'>
             <freejoint name="root3"/>
             <geom  type="box" group="0"  size="0.05513 0.05513 0.0185" rgba="0.23 0.23 0.23 1"/>
             <site name="com3" group="0" pos="0 0 0"/>
@@ -237,7 +237,7 @@
             <inertial pos="0 0 0" mass="1.5" fullinertia="0.00011 0.00011 0.00002 0.000000011 0.00000002 0.000000011" /> 
         </body>
 
-        <body name="quad4" pos="-4 4 0.1" euler='0 0 0'>
+        <body name="quad4" pos="-5.65 5.65 0.1" euler='0 0 0'>
             <freejoint name="root4"/>
             <geom  type="box" group="0"  size="0.05513 0.05513 0.0185" rgba="0.23 0.23 0.23 1"/>
             <site name="com4" group="0" pos="0 0 0"/>
@@ -302,52 +302,47 @@
                 <inertial pos="0 0 0" mass="0" diaginertia="0 0 0" /> 
             </body>
             <inertial pos="0 0 0" mass="1.5" fullinertia="0.00011 0.00011 0.00002 0.000000011 0.00000002 0.000000011" /> 
-        </body> -->
+        </body>
 
         <body name="package" pos = "0 0 0.05" euler="0 0 0">
             <freejoint name="root"/>
             <geom type="box" group="0" size="0.05 0.05 0.05" rgba="0.8 0.5 0.23 1" />
             <inertial pos="0 0 0" mass="0.1" diaginertia="0.000000001 0.000000001 0.000000001"/>
-            <!-- <inertial pos="0 0 0" mass="0.01"/> -->
 
-            <body name="cable1" pos="0 0 0.05" euler="0 0 45"> 
-                <composite type="cable" curve="s" count="100 1 1" offset= "0 0 0" size="5.7" initial="ball">
+            <!-- <body name="cable1" pos="0 0 0.05" euler="0 0 45"> 
+                <composite type="cable" curve="s" count="141 1 1" offset= "0 0 0" size="8" initial="ball">
                     <joint kind="main" damping=".015"/>
                     <geom type="capsule" size=".0005" rgba=".8 .2 .1 1" condim="1"/>          
                 </composite>
             </body> 
     
-            <!-- <body name="cable2" pos="0 0 0.05" euler="0 0 -45"> 
-                <composite prefix="C" type="cable" curve="s" count="100 1 1" offset= "0 0 0" size="5.7" initial="none">
+            <body name="cable2" pos="0 0 0.05" euler="0 0 -45"> 
+                <composite prefix="C" type="cable" curve="s" count="141 1 1" offset= "0 0 0" size="8" initial="ball">
                     <joint kind="main" damping=".015"/>
-                    <geom type="capsule" size=".005" rgba=".8 .2 .1 1" condim="1"/>
+                    <geom type="capsule" size=".0005" rgba=".8 .2 .1 1" condim="1"/>
                 </composite>
-                <inertial pos="0 0 0" mass="0.0000001" diaginertia="0.000000001 0.000000001 0.000000001" />
             </body>
 
            <body name="cable3" pos="0 0 0.05" euler="0 0 -135"> 
-                <composite prefix="D" type="cable" curve="s" count="100 1 1" offset= "0 0 0" size="5.7" initial="ball">
+                <composite prefix="D" type="cable" curve="s" count="141 1 1" offset= "0 0 0" size="8" initial="ball">
                     <joint kind="main" damping=".015"/>
-                    <geom type="capsule" size=".005" rgba=".8 .2 .1 1" condim="1"/>
+                    <geom type="capsule" size=".0005" rgba=".8 .2 .1 1" condim="1"/>
                 </composite>
-                <inertial pos="0 0 0" mass="0.0000001" diaginertia="0.000000001 0.000000001 0.000000001" />
             </body>
 
              <body name="cable4" pos="0 0 0.05" euler="0 0 -225"> 
-                <composite prefix="E" type="cable" curve="s" count="100 1 1" offset= "0 0 0" size="5.7" initial="none">
+                <composite prefix="E" type="cable" curve="s" count="141 1 1" offset= "0 0 0" size="8" initial="ball">
                     <joint kind="main" damping=".015"/>
-                    <geom type="capsule" size=".005" rgba=".8 .2 .1 1" condim="1"/>
+                    <geom type="capsule" size=".0005" rgba=".8 .2 .1 1" condim="1"/>
                 </composite>
-                <inertial pos="0 0 0" mass="0.0000001" diaginertia="0.000000001 0.000000001 0.000000001" />
-            </body>-->
+            </body> -->
         </body>
 
     </worldbody>
 	
     <equality>
-        <!-- <weld name="quad1connect" body1="B_last" body2="quad1" anchor="0 0 -0.0235" solref="-10000 -1000"/> -->
-        <!-- <weld name="quad1connect" body1="B_last" body2="package" anchor="0 0 0.1"/> -->
-        <!-- <weld name="quad3connect" body1="CB_last" body2="quad2" anchor="0 0 -0.0235" solref="-10000 -1000"/>
+        <!-- <weld name="quad1connect" body1="B_last" body2="quad1" anchor="0 0 -0.0235" solref="-10000 -1000"/>
+        <weld name="quad3connect" body1="CB_last" body2="quad2" anchor="0 0 -0.0235" solref="-10000 -1000"/>
         <weld name="quad2connect" body1="DB_last" body2="quad3" anchor="0 0 -0.0235" solref="-10000 -1000"/>
         <weld name="quad4connect" body1="EB_last" body2="quad4" anchor="0 0 -0.0235" solref="-10000 -1000"/>         -->
     </equality>
@@ -359,12 +354,12 @@
         <framelinacc name="acc1" objtype="site" objname="com"/>
         <framelinvel name="vel2" objtype="site" objname="com2"/>
         <framelinacc name="acc2" objtype="site" objname="com2"/>
-        <!-- <framelinvel name="vel3" objtype="site" objname="com3"/>
-        <framelinvel name="vel4" objtype="site" objname="com4"/> -->
+        <framelinvel name="vel3" objtype="site" objname="com3"/>
+        <framelinacc name="acc3" objtype="site" objname="com3"/>
+        <framelinvel name="vel4" objtype="site" objname="com4"/>
+        <framelinacc name="acc4" objtype="site" objname="com4"/>
 
-        <!-- <frameangacc name="angacc1" objtype="body" objname="quad1"/> -->
-
-	</sensor>
+    </sensor>
 	
     <actuator>
 		<motor name="m1" ctrllimited="true" ctrlrange="0 100" gear="0.0011" joint="motor11"/>
@@ -377,7 +372,7 @@
 		<motor name="m23" ctrllimited="true" ctrlrange="0 100" gear="-0.0011" joint="motor23"/>
 		<motor name="m24" ctrllimited="true" ctrlrange="0 100" gear="-0.0011" joint="motor24"/>
 
-        <!-- <motor name="m31" ctrllimited="true" ctrlrange="0 100" gear="0.0011" joint="motor31"/>
+        <motor name="m31" ctrllimited="true" ctrlrange="0 100" gear="0.0011" joint="motor31"/>
 		<motor name="m32" ctrllimited="true" ctrlrange="0 100" gear="0.0011" joint="motor32"/>
 		<motor name="m33" ctrllimited="true" ctrlrange="0 100" gear="-0.0011" joint="motor33"/>
 		<motor name="m34" ctrllimited="true" ctrlrange="0 100" gear="-0.0011" joint="motor34"/>
@@ -385,6 +380,6 @@
         <motor name="m41" ctrllimited="true" ctrlrange="0 100" gear="0.0011" joint="motor41"/>
 		<motor name="m42" ctrllimited="true" ctrlrange="0 100" gear="0.0011" joint="motor42"/>
 		<motor name="m43" ctrllimited="true" ctrlrange="0 100" gear="-0.0011" joint="motor43"/>
-		<motor name="m44" ctrllimited="true" ctrlrange="0 100" gear="-0.0011" joint="motor44"/> -->
+		<motor name="m44" ctrllimited="true" ctrlrange="0 100" gear="-0.0011" joint="motor44"/>
     </actuator>
 </mujoco>
