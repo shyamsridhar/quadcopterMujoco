@@ -38,8 +38,10 @@ lastx = 0
 lasty = 0
 
 #target for quad1
-target1 = np.array([4, 4, 10], ndmin=2).T
-target2 = np.array([4, -4, 10], ndmin=2).T
+target1 = np.array([2, 2, 10], ndmin=2).T
+target2 = np.array([2, -2, 10], ndmin=2).T
+target3 = np.array([-2, -2, 10], ndmin=2).T
+target4 = np.array([-2, 2, 10], ndmin=2).T
 
 
 # kthr = 0.00005
@@ -59,7 +61,7 @@ timelog = np.array([])
 
 
 def init_controller(model, data):
-    data.qpos[2] = 0.1; data.qpos[13] = 0.1
+    data.qpos[2] = 0.1; data.qpos[13] = 0.1; data.qpos[2] = 0.1; data.qpos[13] = 0.1
     data.qvel[:] = 0
     pass
 
@@ -70,6 +72,8 @@ def controller(model, data):
     """
     apply_force(model, data, 1)
     apply_force(model, data, 2)
+    apply_force(model, data, 3)
+    apply_force(model, data, 4)
 
 
 def keyboard(window, key, scancode, act, mods):
@@ -262,13 +266,13 @@ def cntrl(data, target, quad: str):
         qposStart, qposEnd, linVelStart, linVelEnd = 11, 14, 6, 9
         linaccStart, linaccEnd = 9, 12
     elif quad == "quad3":
-        quatStart, quatEnd, qvelStart, qvelEnd  = 14, 18, 13, 16
-        qposStart, qposEnd, linVelStart, linVelEnd = 11, 14, 12, 15
+        quatStart, quatEnd, qvelStart, qvelEnd  = 25, 29, 23, 26
+        qposStart, qposEnd, linVelStart, linVelEnd = 22, 25, 12, 15
         linaccStart, linaccEnd = 15, 18
     elif quad == "quad4":
-        quatStart, quatEnd, qvelStart, qvelEnd  = 14, 18, 13, 16
-        qposStart, qposEnd, linVelStart, linVelEnd = 11, 14, 6, 9
-        linaccStart, linaccEnd = 9, 12
+        quatStart, quatEnd, qvelStart, qvelEnd  = 36, 40, 33, 36
+        qposStart, qposEnd, linVelStart, linVelEnd = 33, 36, 18, 21
+        linaccStart, linaccEnd = 21, 24
 
 
     R = rotation_m(data, quatStart, quatEnd)
@@ -348,26 +352,34 @@ init_controller(model,data)
 #set the controller
 mj.set_mjcb_control(controller)
 
-error = np.array([0, 0, 0], ndmin=2).T
-bodyangvel1_prev = np.array([0, 0], ndmin=2).T
 
 while not glfw.window_should_close(window):
 
     zf, rf, pf, yf = cntrl(data, target1, "quad1")
     zf2, rf2, pf2, yf2 = cntrl(data, target2, "quad2")
-    # zf3, rf3, pf3, yf3 = cntrl(data, target3, "quad3")
-    # zf4, rf4, pf4, yf4 = cntrl(data, target4, "quad4")
+    zf3, rf3, pf3, yf3 = cntrl(data, target3, "quad3")
+    zf4, rf4, pf4, yf4 = cntrl(data, target4, "quad4")
 
 
-    data.ctrl[0] = zf[0]-rf[0]-pf[0]-yf
-    data.ctrl[1] = zf[0]+rf[0]+pf[0]-yf
-    data.ctrl[2] = zf[0]+rf[0]-pf[0]+yf
-    data.ctrl[3] = zf[0]-rf[0]+pf[0]+yf
+    data.ctrl[0] = zf[0]-rf[0]-pf[0]-yf[0]
+    data.ctrl[1] = zf[0]+rf[0]+pf[0]-yf[0]
+    data.ctrl[2] = zf[0]+rf[0]-pf[0]+yf[0]
+    data.ctrl[3] = zf[0]-rf[0]+pf[0]+yf[0]
 
-    data.ctrl[4] = zf2[0]-rf2[0]-pf2[0]-yf2
-    data.ctrl[5] = zf2[0]+rf2[0]+pf2[0]-yf2
-    data.ctrl[6] = zf2[0]+rf2[0]-pf2[0]+yf2
-    data.ctrl[7] = zf2[0]-rf2[0]+pf2[0]+yf2
+    data.ctrl[4] = zf2[0]-rf2[0]-pf2[0]-yf2[0]
+    data.ctrl[5] = zf2[0]+rf2[0]+pf2[0]-yf2[0]
+    data.ctrl[6] = zf2[0]+rf2[0]-pf2[0]+yf2[0]
+    data.ctrl[7] = zf2[0]-rf2[0]+pf2[0]+yf2[0]
+
+    data.ctrl[8] = zf3[0]-rf3[0]-pf3[0]-yf3[0]
+    data.ctrl[9] = zf3[0]+rf3[0]+pf3[0]-yf3[0]
+    data.ctrl[10] = zf3[0]+rf3[0]-pf3[0]+yf3[0]
+    data.ctrl[11] = zf3[0]-rf3[0]+pf3[0]+yf3[0]
+
+    data.ctrl[12] = zf4[0]-rf4[0]-pf4[0]-yf4[0]
+    data.ctrl[13] = zf4[0]+rf4[0]+pf4[0]-yf4[0]
+    data.ctrl[14] = zf4[0]+rf4[0]-pf4[0]+yf4[0]
+    data.ctrl[15] = zf4[0]-rf4[0]+pf4[0]+yf4[0]
 
     for _ in range(2):
       mj.mj_step(model, data)
@@ -386,11 +398,12 @@ while not glfw.window_should_close(window):
       
 
     # if np.all(abs(target1 - currentpos1) <= tol) and data.time>=10:
-    #     print("setting new target")
-    #     target1 = target1 + np.array([0.1,0,0], ndmin=2).T
-    #     # target2 = target2 + np.array([0.1,0,0], ndmin=2).T
-    #     # target3 = target3 + np.array([0.1,0,0], ndmin=2).T
-    #     # target4 = target4 + np.array([0.1,0,0], ndmin=2).T
+    if data.time>=10:
+        # print("setting new target")
+        target1 = target1 + np.array([0.1,0,0], ndmin=2).T
+        target2 = target2 + np.array([0.1,0,0], ndmin=2).T
+        target3 = target2 - np.array([4,0,0], ndmin=2).T
+        target4 = target1 - np.array([4,0,0], ndmin=2).T
     
     # get framebuffer viewport
     viewport_width, viewport_height = glfw.get_framebuffer_size(
@@ -414,6 +427,6 @@ glfw.terminate()
 
 
 # plt.scatter(timelog,z)
-# plt.scatter(timelog,x)
+plt.scatter(timelog,x)
 # plt.scatter(timelog,y)
-# plt.show()
+plt.show()
