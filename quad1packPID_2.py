@@ -19,17 +19,11 @@ button_right = False
 lastx = 0
 lasty = 0
 
-# target1 = np.array([2, 2, 10], ndmin=2).T
-# target2 = np.array([2, -2, 10], ndmin=2).T
-# target3 = np.array([-2, -2, 10], ndmin=2).T
-# target4 = np.array([-2, 2, 10], ndmin=2).T
-
-
 kthr = 1.08E-05
 ktrq = 1.62E-07
 
 
-target1 = np.zeros((10,3))
+target1, target2, target3, target4 = np.zeros((10,3)), np.zeros((10,3)), np.zeros((10,3)), np.zeros((10,3))
 ti = np.linspace(0, 1, num=10, endpoint=True).T
 
 #takeoff
@@ -239,7 +233,7 @@ def sensor_data():
     pass
 
 
-def cntrl(data, target, quad: str):
+def cntrl(data, target, quad):
     """
     Function which contains the flight controller PID code. MjData positions have been hardcoded
     
@@ -248,23 +242,14 @@ def cntrl(data, target, quad: str):
         qvelEng: Ending position of angular velocity of root joints
     """
     
-    #initializing variables for retrieving data
-    if quad == "quad1":
-        quatStart, quatEnd, qvelStart, qvelEnd  = 3, 7, 3, 6
-        qposStart, qposEnd, linVelStart, linVelEnd = 0, 3, 0, 3
-        linaccStart, linaccEnd = 3, 6
-    elif quad == "quad2":
-        quatStart, quatEnd, qvelStart, qvelEnd  = 14, 18, 13, 16
-        qposStart, qposEnd, linVelStart, linVelEnd = 11, 14, 6, 9
-        linaccStart, linaccEnd = 9, 12
-    elif quad == "quad3":
-        quatStart, quatEnd, qvelStart, qvelEnd  = 25, 29, 23, 26
-        qposStart, qposEnd, linVelStart, linVelEnd = 22, 25, 12, 15
-        linaccStart, linaccEnd = 15, 18
-    elif quad == "quad4":
-        quatStart, quatEnd, qvelStart, qvelEnd  = 36, 40, 33, 36
-        qposStart, qposEnd, linVelStart, linVelEnd = 33, 36, 18, 21
-        linaccStart, linaccEnd = 21, 24
+    #initializing variables for retrieving sensor data
+    linaccEnd = 6*quad; linaccStart = 6*quad-3
+    linVelStart = 6*quad-6; linVelEnd = linaccStart
+
+    jntId = mj.mj_name2id(model, 3, f"root{quad}")
+    qposStart = model.jnt_qposadr[jntId]; qvelStart = model.jnt_dofadr[jntId] + 3
+    quatStart = qposStart + 3; quatEnd = qposStart + 7; qposEnd = qposStart + 3
+    qvelEnd = qvelStart + 3
 
     target = np.reshape(target, (3,1))
     global g_x, g_y, g_z, timelog
@@ -355,10 +340,10 @@ i = 1
 while not glfw.window_should_close(window):
 
 
-    zf, rf, pf, yf, poslog1 = cntrl(data, target1[i,:], "quad1")
-    # zf2, rf2, pf2, yf2, poslog2 = cntrl(data, target2, "quad2")
-    # zf3, rf3, pf3, yf3, poslog3 = cntrl(data, target3, "quad3")
-    # zf4, rf4, pf4, yf4, poslog4 = cntrl(data, target4, "quad4")
+    zf, rf, pf, yf, poslog1 = cntrl(data, target1[i,:], 1)
+    # zf2, rf2, pf2, yf2, poslog2 = cntrl(data, target2, 2)
+    # zf3, rf3, pf3, yf3, poslog3 = cntrl(data, target3, 3)
+    # zf4, rf4, pf4, yf4, poslog4 = cntrl(data, target4, 4)
 
     data.ctrl[0] = zf[0]-rf[0]-pf[0]-yf[0]
     data.ctrl[1] = zf[0]+rf[0]+pf[0]-yf[0]
