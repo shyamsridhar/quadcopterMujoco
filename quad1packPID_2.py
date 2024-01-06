@@ -28,18 +28,20 @@ ti = np.linspace(0, 1, num=10, endpoint=True).T
 
 #takeoff
 for i in range(len(ti)):
-    target1[i,0] = -ti[i]*3.65 + 5.65
-    target1[i,1] = -ti[i]*3.65 + 5.65
-    target1[i,2] = ti[i]*10
+    target1[i,0] = -ti[i]*3.65 + 5.65; target2[i,0] = -ti[i]*3.65 + 5.65; target3[i,0] = ti[i]*3.65 - 5.65; target4[i,0] = ti[i]*3.65 - 5.65
+    target1[i,1] = -ti[i]*3.65 + 5.65; target2[i,1] = ti[i]*3.65 - 5.65 ; target3[i,1] = ti[i]*3.65 - 5.65; target4[i,1] = -ti[i]*3.65 + 5.65
+    target1[i,2] = ti[i]*10; target2[i,2] = ti[i]*10; target3[i,2] = ti[i]*10; target4[i,2] = ti[i]*10 
 
 #horizontal travel
-horzTargets = np.zeros((40,3))
-horzTargets[:,1:3] = [2,10]
-horzTargets[:,0] = np.linspace(2, 15, num=40, endpoint=True).T
+horzTargets1 = np.zeros((40,3)); horzTargets2 = np.zeros((40,3)); horzTargets3 = np.zeros((40,3)); horzTargets4 = np.zeros((40,3))
+horzTargets1[:,1:3] = [2,10]; horzTargets2[:,1:3] = [-2,10]; horzTargets3[:,1:3] = [-2,10]; horzTargets4[:,1:3] = [2,10]
+horzTargets1[:,0] = np.linspace(2, 15, num=40, endpoint=True).T; horzTargets2[:,0] = np.linspace(2, 15, num=40, endpoint=True).T
+horzTargets3[:,0] = horzTargets2[:,0] - 4; horzTargets4[:,0] = horzTargets1[:,0] - 4
 
-target1 = np.append(target1, horzTargets, axis=0)
+target1 = np.append(target1, horzTargets1, axis=0); target2 = np.append(target2, horzTargets2, axis=0)
+target3 = np.append(target3, horzTargets3, axis=0); target4 = np.append(target4, horzTargets4, axis=0)
 
-#Declaring global logger variables. 4 columns for each quadcopter
+#Declaring global logger variables. number indicates the quadcopter
 g_pos_1 = np.zeros((1,3)); g_pos_2 = np.zeros((1,3))
 g_pos_3 = np.zeros((1,3)); g_pos_4 = np.zeros((1,3))
 timelog = np.array([])
@@ -55,9 +57,9 @@ def controller(model, data):
     Applies force on to the correct propeller depending on the speed of the motor
     """
     apply_force(model, data, 1)
-    # apply_force(model, data, 2)
-    # apply_force(model, data, 3)
-    # apply_force(model, data, 4)
+    apply_force(model, data, 2)
+    apply_force(model, data, 3)
+    apply_force(model, data, 4)
 
 
 def keyboard(window, key, scancode, act, mods):
@@ -341,42 +343,45 @@ while not glfw.window_should_close(window):
 
 
     zf, rf, pf, yf, poslog1 = cntrl(data, target1[i,:], 1)
-    # zf2, rf2, pf2, yf2, poslog2 = cntrl(data, target2, 2)
-    # zf3, rf3, pf3, yf3, poslog3 = cntrl(data, target3, 3)
-    # zf4, rf4, pf4, yf4, poslog4 = cntrl(data, target4, 4)
+    zf2, rf2, pf2, yf2, poslog2 = cntrl(data, target2[i,:], 2)
+    zf3, rf3, pf3, yf3, poslog3 = cntrl(data, target3[i,:], 3)
+    zf4, rf4, pf4, yf4, poslog4 = cntrl(data, target4[i,:], 4)
 
     data.ctrl[0] = zf[0]-rf[0]-pf[0]-yf[0]
     data.ctrl[1] = zf[0]+rf[0]+pf[0]-yf[0]
     data.ctrl[2] = zf[0]+rf[0]-pf[0]+yf[0]
     data.ctrl[3] = zf[0]-rf[0]+pf[0]+yf[0]
 
-    # data.ctrl[4] = zf2[0]-rf2[0]-pf2[0]-yf2[0]
-    # data.ctrl[5] = zf2[0]+rf2[0]+pf2[0]-yf2[0]
-    # data.ctrl[6] = zf2[0]+rf2[0]-pf2[0]+yf2[0]
-    # data.ctrl[7] = zf2[0]-rf2[0]+pf2[0]+yf2[0]
+    data.ctrl[4] = zf2[0]-rf2[0]-pf2[0]-yf2[0]
+    data.ctrl[5] = zf2[0]+rf2[0]+pf2[0]-yf2[0]
+    data.ctrl[6] = zf2[0]+rf2[0]-pf2[0]+yf2[0]
+    data.ctrl[7] = zf2[0]-rf2[0]+pf2[0]+yf2[0]
 
-    # data.ctrl[8] = zf3[0]-rf3[0]-pf3[0]-yf3[0]
-    # data.ctrl[9] = zf3[0]+rf3[0]+pf3[0]-yf3[0]
-    # data.ctrl[10] = zf3[0]+rf3[0]-pf3[0]+yf3[0]
-    # data.ctrl[11] = zf3[0]-rf3[0]+pf3[0]+yf3[0]
+    data.ctrl[8] = zf3[0]-rf3[0]-pf3[0]-yf3[0]
+    data.ctrl[9] = zf3[0]+rf3[0]+pf3[0]-yf3[0]
+    data.ctrl[10] = zf3[0]+rf3[0]-pf3[0]+yf3[0]
+    data.ctrl[11] = zf3[0]-rf3[0]+pf3[0]+yf3[0]
 
-    # data.ctrl[12] = zf4[0]-rf4[0]-pf4[0]-yf4[0]
-    # data.ctrl[13] = zf4[0]+rf4[0]+pf4[0]-yf4[0]
-    # data.ctrl[14] = zf4[0]+rf4[0]-pf4[0]+yf4[0]
-    # data.ctrl[15] = zf4[0]-rf4[0]+pf4[0]+yf4[0]
+    data.ctrl[12] = zf4[0]-rf4[0]-pf4[0]-yf4[0]
+    data.ctrl[13] = zf4[0]+rf4[0]+pf4[0]-yf4[0]
+    data.ctrl[14] = zf4[0]+rf4[0]-pf4[0]+yf4[0]
+    data.ctrl[15] = zf4[0]-rf4[0]+pf4[0]+yf4[0]
 
     # data logging
     g_pos_1 = np.append(g_pos_1, poslog1.T, axis=0)
-    # g_pos_2 = np.append(g_pos_2, poslog2.T, axis=0)
-    # g_pos_3 = np.append(g_pos_3, poslog3.T, axis=0)
-    # g_pos_4 = np.append(g_pos_4, poslog4.T, axis=0)
+    g_pos_2 = np.append(g_pos_2, poslog2.T, axis=0)
+    g_pos_3 = np.append(g_pos_3, poslog3.T, axis=0)
+    g_pos_4 = np.append(g_pos_4, poslog4.T, axis=0)
     timelog = np.append(timelog, data.time)
 
     for _ in range(2):
       mj.mj_step(model, data)
 
 
-    if i < len(target1) and np.all(abs(target1[i,:]-np.array(data.qpos[0:3])) <= 7e-1):
+    if i < len(target1) and np.all(abs(target1[i,:]-np.array(data.qpos[0:3])) <= 7e-1) \
+            and np.all(abs(target2[i,:]-np.array(data.qpos[11:14])) <= 7e-1) \
+            and np.all(abs(target3[i,:]-np.array(data.qpos[22:25])) <= 7e-1) \
+            and np.all(abs(target4[i,:]-np.array(data.qpos[33:36])) <= 7e-1):
         # print(target1[i,:]-np.array(data.qpos[0:3]))
         i = i + 1
 
@@ -419,4 +424,17 @@ axs[0,1].plot(timelog,g_pos_1[1:,1].T)
 axs[0,1].set_title("y vs Time plot")
 axs[0,2].plot(timelog,g_pos_1[1:,2].T)
 axs[0,2].set_title("z vs Time plot")
+
+axs[1,0].plot(timelog,g_pos_2[1:,0].T)
+axs[1,1].plot(timelog,g_pos_2[1:,1].T)
+axs[1,2].plot(timelog,g_pos_2[1:,2].T)
+
+axs[2,0].plot(timelog,g_pos_3[1:,0].T)
+axs[2,1].plot(timelog,g_pos_3[1:,1].T)
+axs[2,2].plot(timelog,g_pos_3[1:,2].T)
+
+axs[3,0].plot(timelog,g_pos_4[1:,0].T)
+axs[3,1].plot(timelog,g_pos_4[1:,1].T)
+axs[3,2].plot(timelog,g_pos_4[1:,2].T)
+
 plt.show()
