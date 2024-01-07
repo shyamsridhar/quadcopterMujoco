@@ -3,3 +3,4 @@ MJDATA_4.TXT
 MJMODEL_4.TXT
 log.csv
 MUJOCO_LOG.TXT
+*.png

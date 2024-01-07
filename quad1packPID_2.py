@@ -267,13 +267,16 @@ def cntrl(data, target, quad):
     currentvel = np.array(data.sensordata[linVelStart:linVelEnd], ndmin=2).T 
     currentacc = np.array(data.sensordata[linaccStart:linaccEnd], ndmin=2).T
 
+    currentpos = currentpos + np.random.normal(loc=0.0, scale=1, size=(3,1))
     print(data.qpos[0:3])
     #Altitude model
     des_vel_z = 1.1*(target[2] - currentpos[2])
+    # des_vel_z = des_vel_z/np.linalg.norm(des_vel_z)
     des_thrust = 10*(des_vel_z - currentvel[2]) + 0.001*(0-currentacc[2])
 
     #horizontal model
     des_xy_vel = 1.1*(target[0:2]-currentpos[0:2])
+    # des_xy_vel = des_xy_vel*1/np.linalg.norm(des_xy_vel)
     current_xy_vel = currentvel[0:2]
     current_xy_acc = currentacc[0:2]
     des_xy_ang = 0.5*(des_xy_vel - current_xy_vel) + 0.005*(0-current_xy_acc)
@@ -332,7 +335,7 @@ glfw.set_mouse_button_callback(window, mouse_button)
 glfw.set_scroll_callback(window, scroll)
 
 # cam.type=1; cam.trackbodyid=53
-cam.type=1; cam.trackbodyid=1
+cam.type=1; cam.trackbodyid=5
 cam.azimuth = 90 ; cam.elevation = -45 ; cam.distance =  10
 
 #initialize the controller
@@ -363,7 +366,7 @@ while not glfw.window_should_close(window):
       mj.mj_step(model, data)
 
 
-    if i < len(target1) and np.all(abs(target1[i,:]-np.array(data.qpos[0:3])) <= 7e-1) \
+    if i < len(target1)-1 and np.all(abs(target1[i,:]-np.array(data.qpos[0:3])) <= 7e-1) \
             and np.all(abs(target2[i,:]-np.array(data.qpos[11:14])) <= 7e-1) \
             and np.all(abs(target3[i,:]-np.array(data.qpos[22:25])) <= 7e-1) \
             and np.all(abs(target4[i,:]-np.array(data.qpos[33:36])) <= 7e-1):
