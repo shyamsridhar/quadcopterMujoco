@@ -48,10 +48,6 @@ targetquad[:,:,2] = target3; targetquad[:,:,3] = target4
 
 
 #Declaring global logger variables. number indicates the quadcopter
-g_pos_1 = np.zeros((1,3)); g_pos_2 = np.zeros((1,3))
-g_pos_3 = np.zeros((1,3)); g_pos_4 = np.zeros((1,3))
-g_pry_1 = np.zeros((1,3)); g_pry_2 = np.zeros((1,3))
-g_pry_3 = np.zeros((1,3)); g_pry_4 = np.zeros((1,3))
 g_pos_log = np.zeros((1000000,3,4)); g_pry_log = np.zeros((1000000,3,4))
 timelog = np.zeros((1000000)) #np.array([])
 
@@ -67,11 +63,6 @@ def controller(model, data):
     """
     for j in range(numQuads):
         apply_force(model, data, j+1)
-
-
-    # apply_force(model, data, 2)
-    # apply_force(model, data, 3)
-    # apply_force(model, data, 4)
 
 
 def keyboard(window, key, scancode, act, mods):
@@ -353,12 +344,6 @@ mj.set_mjcb_control(controller)
 i = 1; logcount = 0
 while not glfw.window_should_close(window):
 
-
-    # zf, rf, pf, yf, poslog1, prylog1 = cntrl(data, target1[i,:], 1)
-    # zf2, rf2, pf2, yf2, poslog2, prylog2 = cntrl(data, target2[i,:], 2)
-    # zf3, rf3, pf3, yf3, poslog3, prylog3 = cntrl(data, target3[i,:], 3)
-    # zf4, rf4, pf4, yf4, poslog4, prylog4 = cntrl(data, target4[i,:], 4)
-
     for j in range(numQuads):
         zf, rf, pf, yf, poslog, prylog = cntrl(data, targetquad[i,:,j], j+1)
 
@@ -370,42 +355,9 @@ while not glfw.window_should_close(window):
         g_pos_log[logcount,:,j] = poslog.T
         g_pry_log[logcount,:,j] = prylog.T
 
-        # g_pos_log[:,:,j] = np.append(g_pos_log[:,:,j], poslog.T, axis=0)
-        # g_pry_log[:,:,j] = np.append(g_pry_log[:,:,j], prylog.T, axis=0)
 
     timelog[logcount] = data.time
     logcount = logcount + 1
-
-    # data.ctrl[0] = zf[0]-rf[0]-pf[0]-yf[0]
-    # data.ctrl[1] = zf[0]+rf[0]+pf[0]-yf[0]
-    # data.ctrl[2] = zf[0]+rf[0]-pf[0]+yf[0]
-    # data.ctrl[3] = zf[0]-rf[0]+pf[0]+yf[0]
-
-    # data.ctrl[4] = zf2[0]-rf2[0]-pf2[0]-yf2[0]
-    # data.ctrl[5] = zf2[0]+rf2[0]+pf2[0]-yf2[0]
-    # data.ctrl[6] = zf2[0]+rf2[0]-pf2[0]+yf2[0]
-    # data.ctrl[7] = zf2[0]-rf2[0]+pf2[0]+yf2[0]
-
-    # data.ctrl[8] = zf3[0]-rf3[0]-pf3[0]-yf3[0]
-    # data.ctrl[9] = zf3[0]+rf3[0]+pf3[0]-yf3[0]
-    # data.ctrl[10] = zf3[0]+rf3[0]-pf3[0]+yf3[0]
-    # data.ctrl[11] = zf3[0]-rf3[0]+pf3[0]+yf3[0]
-
-    # data.ctrl[12] = zf4[0]-rf4[0]-pf4[0]-yf4[0]
-    # data.ctrl[13] = zf4[0]+rf4[0]+pf4[0]-yf4[0]
-    # data.ctrl[14] = zf4[0]+rf4[0]-pf4[0]+yf4[0]
-    # data.ctrl[15] = zf4[0]-rf4[0]+pf4[0]+yf4[0]
-
-    # data logging
-    # g_pos_1 = np.append(g_pos_1, poslog1.T, axis=0)
-    # g_pos_2 = np.append(g_pos_2, poslog2.T, axis=0)
-    # g_pos_3 = np.append(g_pos_3, poslog3.T, axis=0)
-    # g_pos_4 = np.append(g_pos_4, poslog4.T, axis=0)
-    # g_pry_1 = np.append(g_pry_1, prylog1.T, axis=0)
-    # g_pry_2 = np.append(g_pry_2, prylog2.T, axis=0)
-    # g_pry_3 = np.append(g_pry_3, prylog3.T, axis=0)
-    # g_pry_4 = np.append(g_pry_4, prylog4.T, axis=0)
-    # timelog = np.append(timelog, data.time)
 
     for _ in range(2):
       mj.mj_step(model, data)
@@ -421,15 +373,6 @@ while not glfw.window_should_close(window):
     if (data.time>=simend):
         break
       
-
-    # if np.all(abs(target1 - currentpos1) <= tol) and data.time>=10:
-    # if data.time>=10:
-    #     # print("setting new target")
-    #     target1 = target1 + np.array([0.1,0,0], ndmin=2).T
-    #     target2 = target2 + np.array([0.1,0,0], ndmin=2).T
-    #     target3 = np.array(data.qpos[11:14], ndmin=2).T - np.array([4,0,0], ndmin=2).T
-    #     target4 = np.array(data.qpos[0:3], ndmin=2).T - np.array([4,0,0], ndmin=2).T
-    
     # get framebuffer viewport
     # viewport_width, viewport_height = glfw.get_framebuffer_size(
     #     window)
@@ -454,9 +397,12 @@ fig, pos = plt.subplots(numQuads,3)
 fig, pry = plt.subplots(numQuads,3)
 for j in range(numQuads):
     for i in range(3):
-        pos[j,i].plot(timelog[0:10000], g_pos_log[0:10000,i,j].T)
-        pry[j,i].plot(timelog[0:10000], g_pry_log[0:10000,i,j].T)
-
+        if numQuads == 1:
+            pos[i].plot(timelog[0:logcount], g_pos_log[0:logcount,i,j].T)
+            pry[i].plot(timelog[0:logcount], g_pry_log[0:logcount,i,j].T)
+        else:
+            pos[j,i].plot(timelog[0:logcount], g_pos_log[0:logcount,i,j].T)
+            pry[j,i].plot(timelog[0:logcount], g_pry_log[0:logcount,i,j].T)
 
 pos[0,0].set_title("x vs Time plot")
 pos[0,1].set_title("y vs Time plot")
@@ -467,45 +413,3 @@ pry[0,2].set_title("yaw vs Time plot")
 
 plt.show()
 
-# fig, axs = plt.subplots(4, 3)
-# axs[0,0].plot(timelog,g_pos_1[1:,0].T)
-# axs[0,0].set_title("x vs Time plot")
-# axs[0,1].plot(timelog,g_pos_1[1:,1].T)
-# axs[0,1].set_title("y vs Time plot")
-# axs[0,2].plot(timelog,g_pos_1[1:,2].T)
-# axs[0,2].set_title("z vs Time plot")
-
-# axs[1,0].plot(timelog,g_pos_2[1:,0].T)
-# axs[1,1].plot(timelog,g_pos_2[1:,1].T)
-# axs[1,2].plot(timelog,g_pos_2[1:,2].T)
-
-# axs[2,0].plot(timelog,g_pos_3[1:,0].T)
-# axs[2,1].plot(timelog,g_pos_3[1:,1].T)
-# axs[2,2].plot(timelog,g_pos_3[1:,2].T)
-
-# axs[3,0].plot(timelog,g_pos_4[1:,0].T)
-# axs[3,1].plot(timelog,g_pos_4[1:,1].T)
-# axs[3,2].plot(timelog,g_pos_4[1:,2].T)
-
-
-# fig, ax1 = plt.subplots(4,3)
-# ax1[0,0].plot(timelog,g_pry_1[1:,0].T)
-# ax1[0,0].set_title("pitch vs Time plot")
-# ax1[0,1].plot(timelog,g_pry_1[1:,1].T)
-# ax1[0,1].set_title("roll vs Time plot")
-# ax1[0,2].plot(timelog,g_pry_1[1:,2].T)
-# ax1[0,2].set_title("yaw vs Time plot")
-
-# ax1[1,0].plot(timelog,g_pry_2[1:,0].T)
-# ax1[1,1].plot(timelog,g_pry_2[1:,1].T)
-# ax1[1,2].plot(timelog,g_pry_2[1:,2].T)
-
-# ax1[2,0].plot(timelog,g_pry_3[1:,0].T)
-# ax1[2,1].plot(timelog,g_pry_3[1:,1].T)
-# ax1[2,2].plot(timelog,g_pry_3[1:,2].T)
-
-# ax1[3,0].plot(timelog,g_pry_4[1:,0].T)
-# ax1[3,1].plot(timelog,g_pry_4[1:,1].T)
-# ax1[3,2].plot(timelog,g_pry_4[1:,2].T)
-
-# plt.show()
