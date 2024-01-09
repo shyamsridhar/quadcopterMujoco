@@ -9,7 +9,7 @@ import os
 from matplotlib import pyplot as plt
 
 xml_path = 'quad1pack.xml'
-simend = 20
+simend = 30
 print_camera_config = 0
 
 # For callback functions
@@ -24,28 +24,10 @@ ktrq = 1.62E-07
 
 numQuads = 4
 
-target1, target2, target3, target4 = np.zeros((10,3)), np.zeros((10,3)), np.zeros((10,3)), np.zeros((10,3))
-ti = np.linspace(0, 1, num=10, endpoint=True).T
-
-#takeoff
-for i in range(len(ti)):
-    target1[i,0] = -ti[i]*3.65 + 5.65; target2[i,0] = -ti[i]*3.65 + 5.65; target3[i,0] = ti[i]*3.65 - 5.65; target4[i,0] = ti[i]*3.65 - 5.65
-    target1[i,1] = -ti[i]*3.65 + 5.65; target2[i,1] = ti[i]*3.65 - 5.65 ; target3[i,1] = ti[i]*3.65 - 5.65; target4[i,1] = -ti[i]*3.65 + 5.65
-    target1[i,2] = ti[i]*10; target2[i,2] = ti[i]*10; target3[i,2] = ti[i]*10; target4[i,2] = ti[i]*10 
-
-#horizontal travel
-horzTargets1 = np.zeros((40,3)); horzTargets2 = np.zeros((40,3)); horzTargets3 = np.zeros((40,3)); horzTargets4 = np.zeros((40,3))
-horzTargets1[:,1:3] = [2,10]; horzTargets2[:,1:3] = [-2,10]; horzTargets3[:,1:3] = [-2,10]; horzTargets4[:,1:3] = [2,10]
-horzTargets1[:,0] = np.linspace(2, 15, num=40, endpoint=True).T; horzTargets2[:,0] = np.linspace(2, 15, num=40, endpoint=True).T
-horzTargets3[:,0] = horzTargets2[:,0] - 4; horzTargets4[:,0] = horzTargets1[:,0] - 4
-
-target1 = np.append(target1, horzTargets1, axis=0); target2 = np.append(target2, horzTargets2, axis=0)
-target3 = np.append(target3, horzTargets3, axis=0); target4 = np.append(target4, horzTargets4, axis=0)
-
-targetquad = np.zeros((50,3,4)) 
-targetquad[:,:,0] =  target1; targetquad[:,:,1] =  target2
-targetquad[:,:,2] = target3; targetquad[:,:,3] = target4
-
+targetquad = np.zeros((40,3,4)); curPackage = np.array([0, 0, 0], ndmin=2)
+targetPackage = np.array([20, 0, 0], ndmin=2)
+quadPos = np.array([[5.65, 5.65, 0],[5.65, -5.65, 0]
+                         ,[-5.65, -5.65, 0],[-5.65, 5.65, 0]], ndmin=2)
 
 #Declaring global logger variables. number indicates the quadcopter
 g_pos_log = np.zeros((1000000,3,4)); g_pry_log = np.zeros((1000000,3,4))
@@ -137,6 +119,31 @@ def scroll(window, xoffset, yoffset):
     action = mj.mjtMouse.mjMOUSE_ZOOM
     mj.mjv_moveCamera(model, action, 0.0, -0.05 *
                       yoffset, scene, cam)
+
+
+def generatePath(curPackagePos, targetPackagePos, quadstartPos):
+
+    path = np.zeros((40,3,4))
+
+    waypoint1 = quadPositions(curPackagePos, 10)
+    waypoint2 = quadPositions(targetPackagePos, 10)
+    landingPos = quadPositions(targetPackagePos, 0)
+
+    for i in range(4):
+        path[0:10,:,i] = np.linspace(quadstartPos[i,:], waypoint1[i,:], num=10, endpoint=True)
+        path[10:30,:,i] = np.linspace(waypoint1[i,:], waypoint2[i,:], num=20, endpoint=True)
+        path[30:40,:,i] = np.linspace(waypoint2[i,:], landingPos[i,:], num=10, endpoint=True)
+
+    return path
+
+
+def quadPositions(packagePos, altitude):
+    quad = np.zeros((4,3))
+    quad[0,:] = packagePos + np.array([2, 2, altitude], ndmin=2)
+    quad[1,:] = packagePos + np.array([2, -2, altitude], ndmin=2)
+    quad[2,:] = packagePos + np.array([-2, -2, altitude], ndmin=2)
+    quad[3,:] = packagePos + np.array([-2, 2, altitude], ndmin=2)
+    return quad
 
 
 def apply_force(model, data, quadNo):
@@ -263,11 +270,10 @@ def cntrl(data, target, quad):
     cur_pry = calculate_pry(R)
     bodyangvel = calculate_ang_vel(R, cur_pry, qvelStart, qvelEnd)
 
-    currentpos = np.array(data.qpos[qposStart:qposEnd], ndmin=2).T 
-    currentvel = np.array(data.sensordata[linVelStart:linVelEnd], ndmin=2).T 
-    currentacc = np.array(data.sensordata[linaccStart:linaccEnd], ndmin=2).T
+    currentpos = np.array(data.qpos[qposStart:qposEnd], ndmin=2).T #+ np.random.normal(loc=0.0, scale=0.1, size=(3,1))
+    currentvel = np.array(data.sensordata[linVelStart:linVelEnd], ndmin=2).T #+ np.random.normal(loc=0.0, scale=0.05, size=(3,1))
+    currentacc = np.array(data.sensordata[linaccStart:linaccEnd], ndmin=2).T #+ np.random.normal(loc=0.0, scale=0.05, size=(3,1))
 
-    currentpos = currentpos + np.random.normal(loc=0.0, scale=1, size=(3,1))
     print(data.qpos[0:3])
     #Altitude model
     des_vel_z = 1.1*(target[2] - currentpos[2])
@@ -288,10 +294,10 @@ def cntrl(data, target, quad):
     #The following saturation only ensures that des_xy_ang does not exceed 18 deg but there is no check to see if
     #quadcopter is already tilted to max or not
 
-    #saturation limit is 18 degrees
+    #saturation limit is 30 degrees
     max_ang = np.linalg.norm(des_xy_ang[0:2,:], ord=np.inf)
     if max_ang > np.pi/10:
-        des_xy_ang =  (des_xy_ang*np.pi/10)/max_ang
+        des_xy_ang =  (des_xy_ang*np.pi/6)/max_ang
 
     # p d controller for attitude model
     des_torq = 10*(des_xy_ang - cur_pry[0:2]) + 2*(0 - bodyangvel[0:2])
@@ -344,6 +350,9 @@ init_controller(model,data)
 #set the controller
 mj.set_mjcb_control(controller)
 
+#generate path for all the quadcopters
+targetquad = generatePath(curPackage, targetPackage, quadPos)
+
 i = 1; logcount = 0
 while not glfw.window_should_close(window):
 
@@ -366,10 +375,10 @@ while not glfw.window_should_close(window):
       mj.mj_step(model, data)
 
 
-    if i < len(target1)-1 and np.all(abs(target1[i,:]-np.array(data.qpos[0:3])) <= 7e-1) \
-            and np.all(abs(target2[i,:]-np.array(data.qpos[11:14])) <= 7e-1) \
-            and np.all(abs(target3[i,:]-np.array(data.qpos[22:25])) <= 7e-1) \
-            and np.all(abs(target4[i,:]-np.array(data.qpos[33:36])) <= 7e-1):
+    if i < len(targetquad)-1 and np.all(abs(targetquad[i,:,0]-np.array(data.qpos[0:3])) <= 15e-1) \
+            and np.all(abs(targetquad[i,:,1]-np.array(data.qpos[11:14])) <= 15e-1) \
+            and np.all(abs(targetquad[i,:,2]-np.array(data.qpos[22:25])) <= 15e-1) \
+            and np.all(abs(targetquad[i,:,3]-np.array(data.qpos[33:36])) <= 15e-1):
         # print(target1[i,:]-np.array(data.qpos[0:3]))
         i = i + 1
 
@@ -377,21 +386,22 @@ while not glfw.window_should_close(window):
         break
       
     # get framebuffer viewport
-    # viewport_width, viewport_height = glfw.get_framebuffer_size(
-    #     window)
-    # viewport = mj.MjrRect(0, 0, viewport_width, viewport_height)
+    viewport_width, viewport_height = glfw.get_framebuffer_size(
+        window)
+    viewport = mj.MjrRect(0, 0, viewport_width, viewport_height)
 
 
-    # # Update scene and render
-    # mj.mjv_updateScene(model, data, opt, None, cam,
-    #                    mj.mjtCatBit.mjCAT_ALL.value, scene)
-    # mj.mjr_render(viewport, scene, context)
+    # Update scene and render
+    mj.mjv_updateScene(model, data, opt, None, cam,
+                       mj.mjtCatBit.mjCAT_ALL.value, scene)
+    mj.mjr_render(viewport, scene, context)
 
-    # # swap OpenGL buffers (blocking call due to v-sync)
-    # glfw.swap_buffers(window)
 
-    # # process pending GUI events, call GLFW callbacks
-    # glfw.poll_events()
+    # swap OpenGL buffers (blocking call due to v-sync)
+    glfw.swap_buffers(window)
+
+    # process pending GUI events, call GLFW callbacks
+    glfw.poll_events()
 
 
 glfw.terminate()
