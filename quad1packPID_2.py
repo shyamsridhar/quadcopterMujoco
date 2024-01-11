@@ -9,7 +9,7 @@ import os
 from matplotlib import pyplot as plt
 
 xml_path = 'quad1pack.xml'
-simend = 30
+simend = 25
 print_camera_config = 0
 
 # For callback functions
@@ -24,7 +24,7 @@ ktrq = 1.62E-07
 
 numQuads = 4
 
-targetquad = np.zeros((40,3,4)); curPackage = np.array([0, 0, 0], ndmin=2)
+targetquad = np.zeros((60,3,4)); curPackage = np.array([0, 0, 0], ndmin=2)
 targetPackage = np.array([20, 0, 0], ndmin=2)
 quadPos = np.array([[5.65, 5.65, 0],[5.65, -5.65, 0]
                          ,[-5.65, -5.65, 0],[-5.65, 5.65, 0]], ndmin=2)
@@ -123,7 +123,7 @@ def scroll(window, xoffset, yoffset):
 
 def generatePath(curPackagePos, targetPackagePos, quadstartPos):
 
-    path = np.zeros((40,3,4))
+    path = np.zeros((60,3,4))
 
     waypoint1 = quadPositions(curPackagePos, 10)
     waypoint2 = quadPositions(targetPackagePos, 10)
@@ -131,8 +131,8 @@ def generatePath(curPackagePos, targetPackagePos, quadstartPos):
 
     for i in range(4):
         path[0:10,:,i] = np.linspace(quadstartPos[i,:], waypoint1[i,:], num=10, endpoint=True)
-        path[10:30,:,i] = np.linspace(waypoint1[i,:], waypoint2[i,:], num=20, endpoint=True)
-        path[30:40,:,i] = np.linspace(waypoint2[i,:], landingPos[i,:], num=10, endpoint=True)
+        path[10:50,:,i] = np.linspace(waypoint1[i,:], waypoint2[i,:], num=40, endpoint=True)
+        path[50:60,:,i] = np.linspace(waypoint2[i,:], landingPos[i,:], num=10, endpoint=True)
 
     return path
 
@@ -280,9 +280,11 @@ def cntrl(data, target, quad):
     # des_vel_z = des_vel_z/np.linalg.norm(des_vel_z)
     des_thrust = 10*(des_vel_z - currentvel[2]) + 0.001*(0-currentacc[2])
 
+    if data.time>9:
+        breakpoint
     #horizontal model
     des_xy_vel = 1.1*(target[0:2]-currentpos[0:2])
-    # des_xy_vel = des_xy_vel*1/np.linalg.norm(des_xy_vel)
+    # des_xy_vel = 1*des_xy_vel/np.linalg.norm(des_xy_vel)
     current_xy_vel = currentvel[0:2]
     current_xy_acc = currentacc[0:2]
     des_xy_ang = 0.5*(des_xy_vel - current_xy_vel) + 0.005*(0-current_xy_acc)
@@ -294,10 +296,10 @@ def cntrl(data, target, quad):
     #The following saturation only ensures that des_xy_ang does not exceed 18 deg but there is no check to see if
     #quadcopter is already tilted to max or not
 
-    #saturation limit is 30 degrees
+    #saturation limit is 18 degrees
     max_ang = np.linalg.norm(des_xy_ang[0:2,:], ord=np.inf)
     if max_ang > np.pi/10:
-        des_xy_ang =  (des_xy_ang*np.pi/6)/max_ang
+        des_xy_ang =  (des_xy_ang*np.pi/10)/max_ang
 
     # p d controller for attitude model
     des_torq = 10*(des_xy_ang - cur_pry[0:2]) + 2*(0 - bodyangvel[0:2])
