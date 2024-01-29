@@ -303,7 +303,7 @@ def cntrl(data, target, quad):
 
     # p d controller for attitude model
     # des_torq = 10*(des_xy_ang - cur_pry[0:2]) + 2*(0 - bodyangvel[0:2])
-    des_angvel = 10*(des_xy_ang - cur_pry[0:2])
+    des_angvel = 8*(des_xy_ang - cur_pry[0:2])
     des_torq = (des_angvel - bodyangvel[0:2]) + 0.0005*(des_angvel-bodyangvel[0:2])/0.002
 
     # zf = 50 + dpr1[2] 
