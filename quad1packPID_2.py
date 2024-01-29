@@ -247,7 +247,7 @@ def sensor_data():
 
 def cntrl(data, target, quad):
     """
-    Function which contains the flight controller PID code. MjData positions have been hardcoded
+    Function which contains the flight controller PID code. 
     
     Variables:
         qvelStart: Starting postion of angular velocity of root joints
@@ -278,7 +278,7 @@ def cntrl(data, target, quad):
     #Altitude model
     des_vel_z = 1.1*(target[2] - currentpos[2])
     # des_vel_z = des_vel_z/np.linalg.norm(des_vel_z)
-    des_thrust = 10*(des_vel_z - currentvel[2]) + 0.001*(0-currentacc[2])
+    des_thrust = 10*(des_vel_z - currentvel[2]) + 0.001*(des_vel_z-currentvel[2])/0.002
 
     if data.time>9:
         breakpoint
@@ -302,13 +302,15 @@ def cntrl(data, target, quad):
         des_xy_ang =  (des_xy_ang*np.pi/10)/max_ang
 
     # p d controller for attitude model
-    des_torq = 10*(des_xy_ang - cur_pry[0:2]) + 2*(0 - bodyangvel[0:2])
+    # des_torq = 10*(des_xy_ang - cur_pry[0:2]) + 2*(0 - bodyangvel[0:2])
+    des_angvel = 10*(des_xy_ang - cur_pry[0:2])
+    des_torq = (des_angvel - bodyangvel[0:2]) + 0.0005*(des_angvel-bodyangvel[0:2])/0.002
 
     # zf = 50 + dpr1[2] 
     zf_l = 50 + des_thrust
     rf_l = des_torq[1]
     pf_l = des_torq[0]
-    yf_l = 5*(0-cur_pry[2]) + 1*(0-bodyangvel[2])
+    yf_l = 5*(0-cur_pry[2]) + 0.5*(0-bodyangvel[2])
 
     return zf_l, rf_l, pf_l, yf_l, currentpos, cur_pry
 
@@ -366,6 +368,8 @@ while not glfw.window_should_close(window):
         data.ctrl[4*j+2] = zf[0]+rf[0]-pf[0]+yf[0]
         data.ctrl[4*j+3] = zf[0]-rf[0]+pf[0]+yf[0]
 
+        # print(data.ctrl[4*j], data.ctrl[4*j+1], data.ctrl[4*j+2], data.ctrl[4*j+3])
+
         g_pos_log[logcount,:,j] = poslog.T
         g_pry_log[logcount,:,j] = prylog.T
 
@@ -388,22 +392,22 @@ while not glfw.window_should_close(window):
         break
       
     # get framebuffer viewport
-    viewport_width, viewport_height = glfw.get_framebuffer_size(
-        window)
-    viewport = mj.MjrRect(0, 0, viewport_width, viewport_height)
+    # viewport_width, viewport_height = glfw.get_framebuffer_size(
+    #     window)
+    # viewport = mj.MjrRect(0, 0, viewport_width, viewport_height)
 
 
-    # Update scene and render
-    mj.mjv_updateScene(model, data, opt, None, cam,
-                       mj.mjtCatBit.mjCAT_ALL.value, scene)
-    mj.mjr_render(viewport, scene, context)
+    # # Update scene and render
+    # mj.mjv_updateScene(model, data, opt, None, cam,
+    #                    mj.mjtCatBit.mjCAT_ALL.value, scene)
+    # mj.mjr_render(viewport, scene, context)
 
 
-    # swap OpenGL buffers (blocking call due to v-sync)
-    glfw.swap_buffers(window)
+    # # swap OpenGL buffers (blocking call due to v-sync)
+    # glfw.swap_buffers(window)
 
-    # process pending GUI events, call GLFW callbacks
-    glfw.poll_events()
+    # # process pending GUI events, call GLFW callbacks
+    # glfw.poll_events()
 
 
 glfw.terminate()
