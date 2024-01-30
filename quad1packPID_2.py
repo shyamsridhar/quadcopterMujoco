@@ -24,6 +24,15 @@ ktrq = 1.62E-07
 
 numQuads = 4
 
+#attitude control pid constants matrix
+kpvel = np.array([[8,0,0],[0,8,0],[0,0,5]])
+kptorq = np.array([[1,0,0],[0,1,0],[0,0,3]])
+kdtorq = np.array([[0.001,0,0],[0,0.001,0],[0,0,0.9]])
+
+currentPos_g = np.zeros((3,4)); currentPry_g = np.zeros((3,4))
+des_xy_ang_g = np.zeros((2,4)); zf_g = np.zeros((1,4))
+rf_g = np.zeros((1,4)); pf_g = np.zeros((1,4)); yf_g = np.zeros((1,4))
+actuatorSpeed = np.zeros((4,4))
 targetquad = np.zeros((60,3,4)); curPackage = np.array([0, 0, 0], ndmin=2)
 targetPackage = np.array([20, 0, 0], ndmin=2)
 quadPos = np.array([[5.65, 5.65, 0],[5.65, -5.65, 0]
@@ -33,6 +42,9 @@ quadPos = np.array([[5.65, 5.65, 0],[5.65, -5.65, 0]
 g_pos_log = np.zeros((1000000,3,4)); g_pry_log = np.zeros((1000000,3,4))
 timelog = np.zeros((1000000)) #np.array([])
 
+#Control allocation matrix for X configuration quadcopter
+ca_mat = np.array([[kthr, kthr, kthr, kthr],[-0.159*kthr, 0.159*kthr, 0.159*kthr, -0.159*kthr],[-0.159*kthr, 0.159*kthr, -0.159*kthr, 0.159*kthr],[-ktrq, -ktrq, ktrq, ktrq]], ndmin=2)
+ca_mat_inv = np.linalg.inv(ca_mat)
 
 def init_controller(model, data):
     data.qpos[2] = 0.1; data.qpos[13] = 0.1; data.qpos[24] = 0.1; data.qpos[35] = 0.1
@@ -143,6 +155,10 @@ def quadPositions(packagePos, altitude):
     quad[1,:] = packagePos + np.array([2, -2, altitude], ndmin=2)
     quad[2,:] = packagePos + np.array([-2, -2, altitude], ndmin=2)
     quad[3,:] = packagePos + np.array([-2, 2, altitude], ndmin=2)
+    # quad[0,:] = packagePos + np.array([5.65, 5.65, altitude], ndmin=2)
+    # quad[1,:] = packagePos + np.array([5.65, -5.65, altitude], ndmin=2)
+    # quad[2,:] = packagePos + np.array([-5.65, -5.65, altitude], ndmin=2)
+    # quad[3,:] = packagePos + np.array([-5.65, 5.65, altitude], ndmin=2)
     return quad
 
 
@@ -243,6 +259,99 @@ def calculate_ang_vel(R_M, pry, qvelStart, qvelEnd):
 
 def sensor_data():
     pass
+
+
+def pos_cntrl(data, target, quad):
+    """ 
+    Function which contains the position controller
+    """
+    #initializing variables for retrieving sensor data
+    linaccEnd = 6*quad; linaccStart = 6*quad-3
+    linVelStart = 6*quad-6; linVelEnd = linaccStart
+
+    jntId = mj.mj_name2id(model, 3, f"root{quad}")
+    qposStart = model.jnt_qposadr[jntId]; qposEnd = qposStart + 3
+
+    target = np.reshape(target, (3,1))
+
+    currentpos = np.array(data.qpos[qposStart:qposEnd], ndmin=2).T #+ np.random.normal(loc=0.0, scale=0.1, size=(3,1))
+    currentvel = np.array(data.sensordata[linVelStart:linVelEnd], ndmin=2).T #+ np.random.normal(loc=0.0, scale=0.05, size=(3,1))
+    currentacc = np.array(data.sensordata[linaccStart:linaccEnd], ndmin=2).T #+ np.random.normal(loc=0.0, scale=0.05, size=(3,1))
+
+    # print(data.qpos[0:3])
+    #Altitude model
+    des_vel_z = 3*(target[2] - currentpos[2])
+    # des_vel_z = des_vel_z/np.linalg.norm(des_vel_z)
+    des_thrust = 5*(des_vel_z - currentvel[2]) + 0.01*(des_vel_z-currentvel[2])/0.01
+
+    if data.time>9:
+        breakpoint
+    #horizontal model
+    des_xy_vel = 1.1*(target[0:2]-currentpos[0:2])
+    # des_xy_vel = 1*des_xy_vel/np.linalg.norm(des_xy_vel)
+    current_xy_vel = currentvel[0:2]
+    current_xy_acc = currentacc[0:2]
+    des_xy_ang = 0.5*(des_xy_vel - current_xy_vel) + 0.005*(0-current_xy_acc)
+
+    des_xy_ang[1] =  des_xy_ang[1]*-1
+
+    #Current controller does not put any constraint on des_xy_ang. This is being calculated based on velocity error.
+    #As a reult des_xy_ang could still be considerable amount even though quadcopter is tilted heavily.
+    #The following saturation only ensures that des_xy_ang does not exceed 18 deg but there is no check to see if
+    #quadcopter is already tilted to max or not
+
+    #saturation limit is 18 degrees
+    max_ang = np.linalg.norm(des_xy_ang[0:2,:], ord=np.inf)
+    if max_ang > np.pi/10:
+        des_xy_ang =  (des_xy_ang*np.pi/10)/max_ang
+
+    zf_l = (10 + des_thrust)*1.5
+
+    #saturating max thrust desired to 50.73N for air 2216 motors
+    zf_l = max(min(zf_l, 50),0)
+    
+    return des_xy_ang, zf_l, currentpos
+
+
+def att_cntrl(data, des_ang, quad):
+
+    des_ang = np.reshape(des_ang,(2,1))
+    des_ang = np.append(des_ang, [[0]], axis=0)
+    jntId = mj.mj_name2id(model, 3, f"root{quad}")
+    qposStart = model.jnt_qposadr[jntId]; qvelStart = model.jnt_dofadr[jntId] + 3
+    quatStart = qposStart + 3; quatEnd = qposStart + 7; qvelEnd = qvelStart + 3
+
+    R = rotation_m(data, quatStart, quatEnd)
+    cur_pry = calculate_pry(R)
+    bodyangvel = calculate_ang_vel(R, cur_pry, qvelStart, qvelEnd)
+
+    # p d controller for attitude model
+    # des_torq = 10*(des_xy_ang - cur_pry[0:2]) + 2*(0 - bodyangvel[0:2])
+    # des_angvel = 8*(des_ang - cur_pry)
+    # des_torq = (des_angvel - bodyangvel) + 0.0005*(des_angvel-bodyangvel)/0.002
+    des_angvel = np.matmul(kpvel, (des_ang - cur_pry))
+    des_torq = np.matmul(kptorq, (des_angvel - bodyangvel)) + np.matmul(kdtorq, (des_angvel-bodyangvel)/0.002)
+
+    rf_l = des_torq[1]
+    pf_l = des_torq[0]
+    yf_l = des_torq[2]
+
+    #saturating max yaw torque 0.18N-m per motor
+    yf_l = max(min(yf_l, 0.10),-0.10)
+
+    #direction guaranteed saturation for roll and pitch
+    max_torq = np.linalg.norm(des_torq[0:2,:], ord=np.inf)
+    if max_torq > 1:
+        des_torq = (des_torq[0:2,:]*1)/max_torq
+
+    rf_l = des_torq[1]
+    pf_l = des_torq[0]
+
+    # yf_l = 5*(0-cur_pry[2]) + 0.5*(0-bodyangvel[2])
+
+
+
+    return rf_l, pf_l, yf_l, cur_pry
 
 
 def cntrl(data, target, quad):
@@ -360,25 +469,82 @@ targetquad = generatePath(curPackage, targetPackage, quadPos)
 i = 1; logcount = 0
 while not glfw.window_should_close(window):
 
+    #position controller
     for j in range(numQuads):
-        zf, rf, pf, yf, poslog, prylog = cntrl(data, targetquad[i,:,j], j+1)
+        des_xy_ang, zf_g[:,j], poslog = pos_cntrl(data, targetquad[i,:,j], j+1)
+        des_xy_ang_g[:,j] = des_xy_ang[:,0]; currentPos_g[:,j] = poslog[:,0] 
+    
+    for _ in range(5):
+        #attitude controller
+        for j in range(numQuads):
+            rf_g[:,j], pf_g[:,j], yf_g[:,j], prylog = att_cntrl(data, des_xy_ang_g[:,j], j+1)
+            ft_mat = np.array([zf_g[:,j], rf_g[:,j], pf_g[:,j], yf_g[:,j]], ndmin=2)
+            actuatorSpeed[:,j] = np.sqrt(np.matmul(ca_mat_inv, ft_mat))[:,0]
+            g_pos_log[logcount,:,j] = currentPos_g[:,j].T
+            g_pry_log[logcount,:,j] = prylog.T
 
-        data.ctrl[4*j] = zf[0]-rf[0]-pf[0]-yf[0]
-        data.ctrl[4*j+1] = zf[0]+rf[0]+pf[0]-yf[0]
-        data.ctrl[4*j+2] = zf[0]+rf[0]-pf[0]+yf[0]
-        data.ctrl[4*j+3] = zf[0]-rf[0]+pf[0]+yf[0]
+            #linear relation assumption based on manufacturers data
+            actuatorCtrl = 0.10622*actuatorSpeed[:,j] - 18.60
+            print(actuatorCtrl)
 
-        # print(data.ctrl[4*j], data.ctrl[4*j+1], data.ctrl[4*j+2], data.ctrl[4*j+3])
-
-        g_pos_log[logcount,:,j] = poslog.T
-        g_pry_log[logcount,:,j] = prylog.T
+            #actuator saturation needs to be implemented
 
 
-    timelog[logcount] = data.time
-    logcount = logcount + 1
+            data.ctrl[4*j] = actuatorCtrl[0]
+            data.ctrl[4*j+1] = actuatorCtrl[1]
+            data.ctrl[4*j+2] = actuatorCtrl[2]
+            data.ctrl[4*j+3] = actuatorCtrl[3]
 
-    for _ in range(2):
-      mj.mj_step(model, data)
+
+        timelog[logcount] = data.time
+        logcount = logcount + 1
+
+        for _ in range(2):
+            mj.mj_step(model, data)
+
+        # get framebuffer viewport
+        # viewport_width, viewport_height = glfw.get_framebuffer_size(
+        #     window)
+        # viewport = mj.MjrRect(0, 0, viewport_width, viewport_height)
+
+
+        # # Update scene and render
+        # mj.mjv_updateScene(model, data, opt, None, cam,
+        #                    mj.mjtCatBit.mjCAT_ALL.value, scene)
+        # mj.mjr_render(viewport, scene, context)
+
+
+        # # swap OpenGL buffers (blocking call due to v-sync)
+        # glfw.swap_buffers(window)
+
+        # # process pending GUI events, call GLFW callbacks
+        # glfw.poll_events()
+
+
+    # # # # # # # for j in range(numQuads):
+    # # # # # # #     zf, rf, pf, yf, poslog, prylog = cntrl(data, targetquad[i,:,j], j+1)
+
+    # # # # # # #     # ft_mat = np.array([zf, rf, pf, yf], ndmin=2)
+    # # # # # # #     # actuatorSpeed = np.matmul(ca_mat_inv, ft_mat)
+
+
+
+    # # # # # # #     data.ctrl[4*j] = zf[0]-rf[0]-pf[0]-yf[0]
+    # # # # # # #     data.ctrl[4*j+1] = zf[0]+rf[0]+pf[0]-yf[0]
+    # # # # # # #     data.ctrl[4*j+2] = zf[0]+rf[0]-pf[0]+yf[0]
+    # # # # # # #     data.ctrl[4*j+3] = zf[0]-rf[0]+pf[0]+yf[0]
+
+    # # # # # # #     # print(data.ctrl[4*j], data.ctrl[4*j+1], data.ctrl[4*j+2], data.ctrl[4*j+3])
+
+    # # # # # # #     g_pos_log[logcount,:,j] = poslog.T
+    # # # # # # #     g_pry_log[logcount,:,j] = prylog.T
+
+
+    # # # # # # # timelog[logcount] = data.time
+    # # # # # # # logcount = logcount + 1
+
+    # # # # # # # for _ in range(2):
+    # # # # # # #   mj.mj_step(model, data)
 
 
     if i < len(targetquad)-1 and np.all(abs(targetquad[i,:,0]-np.array(data.qpos[0:3])) <= 15e-1) \
