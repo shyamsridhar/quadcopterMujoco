@@ -309,7 +309,7 @@ def pos_cntrl(data, target, quad):
     zf_l = (10 + des_thrust)*1.5
 
     #saturating max thrust desired to 50.73N for air 2216 motors
-    zf_l = max(min(zf_l, 50),0)
+    zf_l = max(min(zf_l, 50),14)
     
     return des_xy_ang, zf_l, currentpos
 
@@ -342,8 +342,8 @@ def att_cntrl(data, des_ang, quad):
 
     #direction guaranteed saturation for roll and pitch
     max_torq = np.linalg.norm(des_torq[0:2,:], ord=np.inf)
-    if max_torq > 0.8:
-        des_torq = (des_torq[0:2,:]*0.8)/max_torq
+    if max_torq > 0.5:
+        des_torq = (des_torq[0:2,:]*0.5)/max_torq
 
     rf_l = des_torq[1]
     pf_l = des_torq[0]
@@ -481,6 +481,9 @@ while not glfw.window_should_close(window):
             rf_g[:,j], pf_g[:,j], yf_g[:,j], prylog = att_cntrl(data, des_xy_ang_g[:,j], j+1)
             ft_mat = np.array([zf_g[:,j], rf_g[:,j], pf_g[:,j], yf_g[:,j]], ndmin=2)
             actuatorSpeed[:,j] = np.sqrt(np.matmul(ca_mat_inv, ft_mat))[:,0]
+            if np.isnan(actuatorSpeed[:,j]).any():
+                breakpoint
+
             # actuatorSSpeed[0,0] = ft_mat[0,0]-ft_mat[1,0]-ft_mat[2,0]-ft_mat[3,0]
             # actuatorSSpeed[1,0] = ft_mat[0,0]+ft_mat[1,0]+ft_mat[2,0]-ft_mat[3,0]
             # actuatorSSpeed[2,0] = ft_mat[0,0]+ft_mat[1,0]-ft_mat[2,0]+ft_mat[3,0]
@@ -493,7 +496,7 @@ while not glfw.window_should_close(window):
 
             #linear relation assumption based on manufacturers data
             actuatorCtrl = 0.10622*actuatorSpeed[:,j] - 18.60
-            print(actuatorSpeed)
+            print(actuatorCtrl)
 
             data.ctrl[4*j] = actuatorCtrl[0]
             data.ctrl[4*j+1] = actuatorCtrl[1]
@@ -508,22 +511,22 @@ while not glfw.window_should_close(window):
             mj.mj_step(model, data)
 
         # get framebuffer viewport
-        viewport_width, viewport_height = glfw.get_framebuffer_size(
-            window)
-        viewport = mj.MjrRect(0, 0, viewport_width, viewport_height)
+        # viewport_width, viewport_height = glfw.get_framebuffer_size(
+        #     window)
+        # viewport = mj.MjrRect(0, 0, viewport_width, viewport_height)
 
 
-        # Update scene and render
-        mj.mjv_updateScene(model, data, opt, None, cam,
-                           mj.mjtCatBit.mjCAT_ALL.value, scene)
-        mj.mjr_render(viewport, scene, context)
+        # # Update scene and render
+        # mj.mjv_updateScene(model, data, opt, None, cam,
+        #                    mj.mjtCatBit.mjCAT_ALL.value, scene)
+        # mj.mjr_render(viewport, scene, context)
 
 
-        # swap OpenGL buffers (blocking call due to v-sync)
-        glfw.swap_buffers(window)
+        # # swap OpenGL buffers (blocking call due to v-sync)
+        # glfw.swap_buffers(window)
 
-        # process pending GUI events, call GLFW callbacks
-        glfw.poll_events()
+        # # process pending GUI events, call GLFW callbacks
+        # glfw.poll_events()
 
 
     # # # # # # # for j in range(numQuads):
